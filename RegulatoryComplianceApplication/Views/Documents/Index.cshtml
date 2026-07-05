@@ -1,0 +1,37 @@
+﻿@model List<RegulatoryComplianceApplication.Web.ViewModels.DocumentListViewModel>
+
+<h1>Documents</h1>
+<a asp-action="Create" class="btn btn-primary mb-3">Add Document</a>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Document number</th>
+            <th>Expiry date</th>
+            <th>Status</th>
+            <th>View</th>
+            <th>Renew</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var doc in Model)
+        {
+            <tr class="@(doc.Status == "Expired" ? "table-danger" : doc.Status == "Expiring Soon" ? "table-warning" : "")">
+                <td>@doc.Title</td>
+                <td>@doc.DocumentNumber</td>
+                <td>@doc.ExpiryDate</td>
+                <td>@(doc.Status)</td>
+                <td><a asp-action="Details" asp-route-id="@doc.DocumentId" class="btn btn-sm btn-info">View</a></td>
+                <td>
+                    <form asp-action="Renew" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@doc.DocumentId" />
+                        <input type="date" name="newExpiryDate" required class="form-control form-control-sm mb-1" />
+                        <input type="file" name="file" required class="form-control form-control-sm mb-1" />
+                        <button type="submit" class="btn btn-sm btn-secondary">Renew</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

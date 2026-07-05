@@ -1,0 +1,30 @@
+﻿@model RegulatoryComplianceApplication.Web.ViewModels.CreateDocumentViewModel
+
+<h1>Add Document</h1>
+<form asp-action="Create" method="post" enctype="multipart/form-data">
+    <div class="mb-3">
+        <label>Document Type</label>
+        <select asp-for="DocumentTypeId" asp-items="Model.DocumentTypes" class="form-select"></select>
+    </div>
+    <div class="mb-3">
+        <label>Title</label>
+        <input asp-for="Title" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label>Document Number</label>
+        <input asp-for="DocumentNumber" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label>Issue Date</label>
+        <input asp-for="IssueDate" type="date" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label>Expiry Date</label>
+        <input asp-for="ExpiryDate" type="date" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label>File</label>
+        <input asp-for="File" type="file" class="form-control" />
+    </div>
+    <button type="submit" class="btn btn-primary">Create</button>
+</form>

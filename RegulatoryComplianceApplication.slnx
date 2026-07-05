@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="RegulatoryComplianceApplication.Core/RegulatoryComplianceApplication.Core.csproj" />
+  <Project Path="RegulatoryComplianceApplication.Infrastructure/RegulatoryComplianceApplication.Infrastructure.csproj" />
+  <Project Path="RegulatoryComplianceApplication/RegulatoryComplianceApplication.csproj" />
+</Solution>

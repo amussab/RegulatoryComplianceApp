@@ -1,0 +1,32 @@
+﻿@model RegulatoryComplianceApplication.Web.ViewModels.DocumentDetailsViewModel
+
+<h1>@Model.Title</h1>
+<p>Document Number: @Model.DocumentNumber</p>
+<p>Status: @Model.Status</p>
+
+<a asp-action="Index" class="btn btn-secondary mb-3">Back to list</a>
+
+<h3>Version History</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Version</th>
+            <th>Issue Date</th>
+            <th>Expiry Date</th>
+            <th>Current</th>
+            <th>File</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var v in Model.Versions)
+        {
+            <tr class="@(v.IsCurrent ? "table-info" : "")">
+                <td>@v.VersionNumber</td>
+                <td>@v.IssueDate</td>
+                <td>@v.ExpiryDate</td>
+                <td>@(v.IsCurrent ? "Yes" : "")</td>
+                <td><a asp-action="Download" asp-route-filePath="@v.FilePath">Download</a></td>
+            </tr>
+        }
+    </tbody>
+</table>
