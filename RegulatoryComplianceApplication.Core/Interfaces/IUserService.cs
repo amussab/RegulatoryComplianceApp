@@ -7,5 +7,6 @@ namespace RegulatoryComplianceApplication.Core.Interfaces
         Task<User?> GetByIdAsync(int userId);
         Task<IEnumerable<User>> GetAllAsync();
         Task<User> CreateAsync(User user, string plainPassword);
+        Task<User?> ValidateCredentialsAsync(string email, string password);
     }
 }

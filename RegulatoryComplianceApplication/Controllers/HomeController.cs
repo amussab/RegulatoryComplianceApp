@@ -1,11 +1,19 @@
 using Microsoft.AspNetCore.Mvc;
 using RegulatoryComplianceApplication.Models;
 using System.Diagnostics;
+using RegulatoryComplianceApplication.Core.Interfaces;
 
 namespace RegulatoryComplianceApplication.Controllers
 {
     public class HomeController : Controller
     {
+        private readonly IEmailService _emailService;
+
+        public HomeController(IEmailService emailService)
+        {
+            _emailService = emailService;
+        }
+
         public IActionResult Index()
         {
             return View();
@@ -20,6 +28,15 @@ namespace RegulatoryComplianceApplication.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+        public async Task<IActionResult> TestEmail()
+        {
+            await _emailService.SendEmailAsync(
+                "abdulrazaqmussab1@gmail.com",
+                "SMTP Test",
+                "Congratulations! Your Regulatory Compliance Application can send emails.");
+
+            return Content("Email sent successfully!");
         }
     }
 }

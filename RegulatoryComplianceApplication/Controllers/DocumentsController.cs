@@ -1,12 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using RegulatoryComplianceApplication.Core.Entities;
 using RegulatoryComplianceApplication.Core.Interfaces;
 using RegulatoryComplianceApplication.Web.ViewModels;
-using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace RegulatoryComplianceApplication.Web.Controllers
 {
+    [Authorize]
     public class DocumentsController : Controller
     {
         private readonly IDocumentService _documentService;
@@ -46,11 +50,12 @@ namespace RegulatoryComplianceApplication.Web.Controllers
 
             return View(viewModels);
         }
+        [Authorize(Roles = "Administrator")]
         [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> Renew(int id, DateOnly newExpiryDate, IFormFile file)
         {
-            const int hardcodedUserId = 1;
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
             var filePath = await _fileStorageService.SaveFileAsync(file.OpenReadStream(), file.FileName);
 
             var newVersion = new DocumentVersion
@@ -60,9 +65,10 @@ namespace RegulatoryComplianceApplication.Web.Controllers
                 ExpiryDate = newExpiryDate
             };
 
-            await _documentService.RenewAsync(id, newVersion, hardcodedUserId);
+            await _documentService.RenewAsync(id, newVersion, userId);
             return RedirectToAction("Index");
         }
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Create()
         {
             var vm = new CreateDocumentViewModel
@@ -75,6 +81,7 @@ namespace RegulatoryComplianceApplication.Web.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Create(CreateDocumentViewModel vm)
         {
             if (vm.File == null || vm.File.Length == 0)
@@ -98,17 +105,16 @@ namespace RegulatoryComplianceApplication.Web.Controllers
                 CreatedAt = DateTime.UtcNow
             };
 
-            const int hardcodedUserId = 1; // TEMP: no auth yet, replace with logged-in user ID once auth exists
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
             var firstVersion = new DocumentVersion
             {
                 FilePath = filePath,
                 IssueDate = vm.IssueDate,
                 ExpiryDate = vm.ExpiryDate,
-                UploadedByUserId = hardcodedUserId
             };
 
-            await _documentService.CreateAsync(document, firstVersion, hardcodedUserId);
+            await _documentService.CreateAsync(document, firstVersion, userId);
 
             return RedirectToAction("Index");
         }

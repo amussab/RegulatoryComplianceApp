@@ -1,0 +1,16 @@
+﻿@model RegulatoryComplianceApplication.Web.ViewModels.LoginViewModel
+
+<h1>Login</h1>
+<div asp-validation-summary="All" class="text-danger"></div>
+<form asp-action="Login" method="post">
+    @Html.AntiForgeryToken()
+    <div class="mb-3">
+        <label>Email</label>
+        <input asp-for="Email" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label>Password</label>
+        <input asp-for="Password" type="password" class="form-control" />
+    </div>
+    <button type="submit" class="btn btn-primary">Login</button>
+</form>

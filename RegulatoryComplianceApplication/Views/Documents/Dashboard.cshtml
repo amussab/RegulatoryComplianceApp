@@ -26,4 +26,19 @@
             </div>
         </div>
     </div>
+    <canvas id="statusChart" style="max-width: 400px;"></canvas>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <script>
+        new Chart(document.getElementById('statusChart'), {
+        type: 'pie',
+        data: {
+        labels: ['Valid', 'Expiring Soon', 'Expired'],
+        datasets: [{
+        data: [@Model.ValidCount, @Model.ExpiringSoonCount, @Model.ExpiredCount],
+        backgroundColor: ['#198754', '#ffc107', '#dc3545']
+        }]
+        }
+        });
+    </script>
 </div>

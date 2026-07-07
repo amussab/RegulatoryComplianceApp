@@ -1,0 +1,142 @@
+﻿@model List<RegulatoryComplianceApplication.Core.Entities.Notification>
+
+@{
+    ViewData["Title"] = "Notifications";
+}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="bi bi-bell-fill me-2"></i>
+            Notifications
+        </h2>
+
+        @if (Model.Any(n => !n.IsRead))
+        {
+            <form asp-action="MarkAllAsRead" method="post">
+                @Html.AntiForgeryToken()
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check2-all"></i>
+                    Mark All as Read
+                </button>
+            </form>
+        }
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            You have no notifications.
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+
+                <table class="table table-hover table-striped mb-0 align-middle">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:120px;">Status</th>
+                            <th>Message</th>
+                            <th style="width:180px;">Created</th>
+                            <th style="width:180px;">Email Sent</th>
+                            <th style="width:160px;">Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var notification in Model)
+                        {
+                            <tr class="@(notification.IsRead ? "" : "table-warning")">
+
+                                <td>
+                                    @if (notification.IsRead)
+                                    {
+                                        <span class="badge bg-success">
+                                            Read
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">
+                                            Unread
+                                        </span>
+                                    }
+                                </td>
+
+                                <td>
+                                    <td>
+                                        <a asp-controller="Documents"
+                                           asp-action="Details"
+                                           asp-route-id="@notification.DocumentId"
+                                           class="text-decoration-none">
+
+                                            @notification.Message
+
+                                        </a>
+                                    </td>
+                                </td>
+
+                                <td>
+                                    @notification.CreatedAt.ToString("dd MMM yyyy HH:mm")
+                                </td>
+
+                                <td>
+                                    @if (notification.SentAt.HasValue)
+                                    {
+                                        @notification.SentAt.Value.ToString("dd MMM yyyy HH:mm")
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">
+                                            Not Sent
+                                        </span>
+                                    }
+                                </td>
+
+                                <td>
+
+                                    @if (!notification.IsRead)
+                                    {
+                                        <form asp-action="MarkAsRead"
+                                              asp-route-id="@notification.NotificationId"
+                                              method="post">
+
+                                            @Html.AntiForgeryToken()
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-outline-success">
+
+                                                <i class="bi bi-check-lg"></i>
+                                                Mark as Read
+
+                                            </button>
+
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">
+                                            —
+                                        </span>
+                                    }
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        </div>
+    }
+
+</div>

@@ -43,5 +43,13 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services
 
             return user;
         }
+        public async Task<User?> ValidateCredentialsAsync(string email, string password)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email && u.IsActive);
+            if (user == null) return null;
+
+            var result = _hasher.VerifyHashedPassword(user, user.PasswordHash, password);
+            return result == PasswordVerificationResult.Success ? user : null;
+        }
     }
 }
