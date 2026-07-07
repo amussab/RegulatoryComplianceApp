@@ -16,13 +16,33 @@ The application enables organizations to manage regulatory compliance documents,
 - Secure login and logout
 
 ---
-###Tech Stack
 
-.NET MVC Core
-ApexCharts.js
-Razor
-Bootstrap
-SSMS
+### Tech Stack
+
+**Backend**
+- ASP.NET Core MVC (.NET)
+- Entity Framework Core
+- SQL Server
+
+**Frontend**
+- Razor Views
+- Bootstrap 5
+- Bootstrap Icons
+- ApexCharts.js
+
+**Background Processing**
+- Hangfire
+
+**Email**
+- MailKit
+
+**Authentication**
+- Cookie Authentication
+
+**Development Tools**
+- Visual Studio 2022
+- SQL Server Management Studio (SSMS)
+- Git & GitHub
 
 ---
 
