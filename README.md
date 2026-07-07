@@ -266,7 +266,11 @@ Possible future enhancements include:
 
 ## Screenshots
 
-*(Add screenshots of the Dashboard, Documents page, Notifications page, and Login page here.)*
+<img width="1912" height="904" alt="image" src="https://github.com/user-attachments/assets/7a79083f-ccbb-4f7a-9631-e78edb6a1f89" />
+<img width="1919" height="900" alt="image" src="https://github.com/user-attachments/assets/51e4a694-d883-4bda-b863-fa8ccb178b84" />
+<img width="1919" height="899" alt="image" src="https://github.com/user-attachments/assets/0cdad4b0-93bd-4d68-90f4-6d10589ebc25" />
+<img width="1919" height="895" alt="image" src="https://github.com/user-attachments/assets/6321c457-3f84-4963-87d5-5b52378a4427" />
+
 
 ---
 
