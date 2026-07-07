@@ -1,37 +1,161 @@
 ﻿@model List<RegulatoryComplianceApplication.Web.ViewModels.DocumentListViewModel>
 
-<h1>Documents</h1>
-<a asp-action="Create" class="btn btn-primary mb-3">Add Document</a>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Title</th>
-            <th>Document number</th>
-            <th>Expiry date</th>
-            <th>Status</th>
-            <th>View</th>
-            <th>Renew</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var doc in Model)
-        {
-            <tr class="@(doc.Status == "Expired" ? "table-danger" : doc.Status == "Expiring Soon" ? "table-warning" : "")">
-                <td>@doc.Title</td>
-                <td>@doc.DocumentNumber</td>
-                <td>@doc.ExpiryDate</td>
-                <td>@(doc.Status)</td>
-                <td><a asp-action="Details" asp-route-id="@doc.DocumentId" class="btn btn-sm btn-info">View</a></td>
-                <td>
-                    <form asp-action="Renew" method="post" enctype="multipart/form-data">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="id" value="@doc.DocumentId" />
-                        <input type="date" name="newExpiryDate" required class="form-control form-control-sm mb-1" />
-                        <input type="file" name="file" required class="form-control form-control-sm mb-1" />
-                        <button type="submit" class="btn btn-sm btn-secondary">Renew</button>
-                    </form>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+@{
+    ViewData["Title"] = "Documents";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div>
+        <h2 class="fw-bold mb-1">
+            <i class="bi bi-folder2-open me-2"></i>
+            Documents
+        </h2>
+
+        <p class="text-muted mb-0">
+            Manage regulatory compliance documents and renew expiring records.
+        </p>
+    </div>
+
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-2"></i>
+        Add Document
+    </a>
+
+</div>
+
+<div class="card">
+
+    <div class="card-body p-0">
+
+        <table class="table table-hover align-middle mb-0">
+
+            <thead>
+
+                <tr>
+                    <th>Title</th>
+                    <th>Document Number</th>
+                    <th>Expiry Date</th>
+                    <th>Status</th>
+                    <th class="text-center">Details</th>
+                    <th>Renew</th>
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                @foreach (var doc in Model)
+                {
+                    <tr>
+
+                        <td class="fw-semibold">
+                            @doc.Title
+                        </td>
+
+                        <td>
+                            @doc.DocumentNumber
+                        </td>
+
+                        <td>
+                            @doc.ExpiryDate
+                        </td>
+
+                        <td>
+
+                            @if (doc.Status == "Expired")
+                            {
+                                <span class="badge bg-danger">
+                                    <i class="bi bi-x-circle me-1"></i>
+                                    Expired
+                                </span>
+                            }
+                            else if (doc.Status == "Expiring Soon")
+                            {
+                                <span class="badge bg-warning text-dark">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>
+                                    Expiring Soon
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle me-1"></i>
+                                    Valid
+                                </span>
+                            }
+
+                        </td>
+
+                        <td class="text-center">
+
+                            <a asp-action="Details"
+                               asp-route-id="@doc.DocumentId"
+                               class="btn btn-outline-primary btn-sm">
+
+                                <i class="bi bi-eye me-1"></i>
+                                View
+
+                            </a>
+
+                        </td>
+
+                        <td style="min-width:280px;">
+
+                            <form asp-action="Renew"
+                                  method="post"
+                                  enctype="multipart/form-data">
+
+                                @Html.AntiForgeryToken()
+
+                                <input type="hidden"
+                                       name="id"
+                                       value="@doc.DocumentId" />
+
+                                <div class="row g-2">
+
+                                    <div class="col-md-5">
+
+                                        <input type="date"
+                                               name="newExpiryDate"
+                                               required
+                                               class="form-control form-control-sm" />
+
+                                    </div>
+
+                                    <div class="col-md-5">
+
+                                        <input type="file"
+                                               name="file"
+                                               required
+                                               class="form-control form-control-sm" />
+
+                                    </div>
+
+                                    <div class="col-md-2 d-grid">
+
+                                        <button type="submit"
+                                                class="btn btn-success btn-sm">
+
+                                            <i class="bi bi-arrow-repeat"></i>
+
+                                        </button>
+
+                                    </div>
+
+                                </div>
+
+                            </form>
+
+                        </td>
+
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
