@@ -16,6 +16,15 @@ The application enables organizations to manage regulatory compliance documents,
 - Secure login and logout
 
 ---
+###Tech Stack
+
+.NET MVC Core
+ApexCharts.js
+Razor
+Bootstrap
+SSMS
+
+---
 
 ### Document Management
 
