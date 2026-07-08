@@ -12,6 +12,8 @@
         public DateTime CreatedAt { get; set; }
         public bool IsDeleted { get; set; }
 
+        public bool IsExpirable { get; set; } = true;
+
         public ICollection<DocumentVersion> Versions { get; set; } = new List<DocumentVersion>();
         public ICollection<DocumentResponsibleUser> ResponsibleUsers { get; set; } = new List<DocumentResponsibleUser>();
     }

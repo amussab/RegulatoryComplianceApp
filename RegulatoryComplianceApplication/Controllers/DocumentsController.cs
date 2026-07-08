@@ -30,30 +30,51 @@ namespace RegulatoryComplianceApplication.Web.Controllers
             var today = DateOnly.FromDateTime(DateTime.UtcNow);
             var cutoff = today.AddDays(60);
 
-            var viewModels = documents.Select(d =>
-            {
-                var expiry = d.CurrentVersion?.ExpiryDate;
-                string status = expiry == null ? "Unknown"
-                    : expiry < today ? "Expired"
-                    : expiry <= cutoff ? "Expiring Soon"
-                    : "Valid";
-
-                return new DocumentListViewModel
+            var viewModels = documents
+                .Select(d =>
                 {
-                    DocumentId = d.DocumentId,
-                    Title = d.Title,
-                    DocumentNumber = d.DocumentNumber,
-                    ExpiryDate = expiry,
-                    Status = status
-                };
-            }).ToList();
+                    var expiry = d.CurrentVersion?.ExpiryDate;
+
+                    string status;
+
+                    if (!d.IsExpirable)
+                    {
+                        status = "No Expiry";
+                    }
+                    else if (expiry == null)
+                    {
+                        status = "Unknown";
+                    }
+                    else if (expiry < today)
+                    {
+                        status = "Expired";
+                    }
+                    else if (expiry <= cutoff)
+                    {
+                        status = "Expiring Soon";
+                    }
+                    else
+                    {
+                        status = "Valid";
+                    }
+
+                    return new DocumentListViewModel
+                    {
+                        DocumentId = d.DocumentId,
+                        Title = d.Title,
+                        DocumentNumber = d.DocumentNumber,
+                        ExpiryDate = expiry,
+                        Status = status
+                    };
+                })
+                .ToList();
 
             return View(viewModels);
         }
         [Authorize(Roles = "Administrator")]
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public async Task<IActionResult> Renew(int id, DateOnly newExpiryDate, IFormFile file)
+        public async Task<IActionResult> Renew(int id, DateOnly? newExpiryDate, IFormFile file)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
             var filePath = await _fileStorageService.SaveFileAsync(file.OpenReadStream(), file.FileName);
@@ -84,8 +105,12 @@ namespace RegulatoryComplianceApplication.Web.Controllers
         [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Create(CreateDocumentViewModel vm)
         {
+
             if (vm.File == null || vm.File.Length == 0)
                 ModelState.AddModelError("File", "A file is required.");
+
+            if (vm.IsExpirable && vm.ExpiryDate == null)
+                ModelState.AddModelError("ExpiryDate", "Expiry date is required for expirable documents.");
 
             if (!ModelState.IsValid)
             {
@@ -102,7 +127,8 @@ namespace RegulatoryComplianceApplication.Web.Controllers
                 DocumentTypeId = vm.DocumentTypeId,
                 Title = vm.Title,
                 DocumentNumber = vm.DocumentNumber,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                IsExpirable = vm.IsExpirable
             };
 
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
@@ -113,10 +139,18 @@ namespace RegulatoryComplianceApplication.Web.Controllers
                 IssueDate = vm.IssueDate,
                 ExpiryDate = vm.ExpiryDate,
             };
+            try
+            {
+                await _documentService.CreateAsync(document, firstVersion, userId);
 
-            await _documentService.CreateAsync(document, firstVersion, userId);
+                return RedirectToAction("Index");
+            }
+            catch (Exception)
+            {
 
-            return RedirectToAction("Index");
+                return BadRequest("Couldn't create a new document");
+            }
+            
         }
         public async Task<IActionResult> Details(int id)
         {
@@ -164,7 +198,7 @@ namespace RegulatoryComplianceApplication.Web.Controllers
             var cutoff = today.AddDays(60);
 
             var vm = new DashboardViewModel();
-            foreach (var d in documents)
+            foreach (var d in documents.Where(d => d.IsExpirable))
             {
                 var expiry = d.CurrentVersion?.ExpiryDate;
                 if (expiry == null) continue;

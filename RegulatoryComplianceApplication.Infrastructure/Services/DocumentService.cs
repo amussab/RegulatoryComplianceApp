@@ -116,6 +116,7 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services
             return await _context.Documents
                 .Include(d => d.CurrentVersion)
                 .Where(d => !d.IsDeleted
+                    && d.IsExpirable
                     && d.CurrentVersion != null
                     && d.CurrentVersion.ExpiryDate <= cutoff
                     && d.CurrentVersion.ExpiryDate >= DateOnly.FromDateTime(DateTime.UtcNow))

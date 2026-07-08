@@ -11,7 +11,7 @@
         Dashboard
     </h2>
 
-    <p class="text-muted">
+    <p class="text-muted mb-0">
         Overview of your organization's regulatory compliance status.
     </p>
 
@@ -23,15 +23,15 @@
 
         <div class="card h-100">
 
-            <div class="card-body text-center">
+            <div class="card-body text-center py-4">
 
-                <i class="bi bi-check-circle-fill text-success display-4"></i>
+                <i class="bi bi-check-circle-fill text-success display-5"></i>
 
-                <h5 class="mt-3">
+                <h5 class="mt-3 mb-2">
                     Valid Documents
                 </h5>
 
-                <h1 class="display-4 fw-bold text-success">
+                <h1 class="display-5 fw-bold text-success mb-0">
                     @Model.ValidCount
                 </h1>
 
@@ -45,15 +45,15 @@
 
         <div class="card h-100">
 
-            <div class="card-body text-center">
+            <div class="card-body text-center py-4">
 
-                <i class="bi bi-exclamation-triangle-fill text-warning display-4"></i>
+                <i class="bi bi-exclamation-triangle-fill text-warning display-5"></i>
 
-                <h5 class="mt-3">
+                <h5 class="mt-3 mb-2">
                     Expiring Soon
                 </h5>
 
-                <h1 class="display-4 fw-bold text-warning">
+                <h1 class="display-5 fw-bold text-warning mb-0">
                     @Model.ExpiringSoonCount
                 </h1>
 
@@ -67,15 +67,15 @@
 
         <div class="card h-100">
 
-            <div class="card-body text-center">
+            <div class="card-body text-center py-4">
 
-                <i class="bi bi-x-circle-fill text-danger display-4"></i>
+                <i class="bi bi-x-circle-fill text-danger display-5"></i>
 
-                <h5 class="mt-3">
+                <h5 class="mt-3 mb-2">
                     Expired
                 </h5>
 
-                <h1 class="display-4 fw-bold text-danger">
+                <h1 class="display-5 fw-bold text-danger mb-0">
                     @Model.ExpiredCount
                 </h1>
 
@@ -87,7 +87,7 @@
 
 </div>
 
-<div class="row mt-5">
+<div class="row mt-5 g-4">
 
     <div class="col-lg-6">
 
@@ -102,9 +102,11 @@
 
             </div>
 
-            <div class="card-body">
+            <div class="card-body d-flex justify-content-center align-items-center">
 
-                <canvas id="statusChart" height="250"></canvas>
+                <div id="statusDonutChart"
+                     style="width:100%; max-width:340px;">
+                </div>
 
             </div>
 
@@ -125,9 +127,11 @@
 
             </div>
 
-            <div class="card-body">
+            <div class="card-body d-flex justify-content-center align-items-center">
 
-                <canvas id="statusBarChart" height="250"></canvas>
+                <div id="statusBarChart"
+                     style="width:100%; max-width:500px;">
+                </div>
 
             </div>
 
@@ -139,80 +143,37 @@
 
 @section Scripts
 {
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
     <script>
 
-        const ctx = document.getElementById('statusChart');
+        const validCount = @Model.ValidCount;
+        const expiringSoonCount = @Model.ExpiringSoonCount;
+        const expiredCount = @Model.ExpiredCount;
 
-        new Chart(ctx, {
+        // ===========================
+        // Doughnut Chart
+        // ===========================
 
-            type: 'doughnut',
+        var donutOptions = {
 
-            data: {
+        chart: {
+        type: 'donut',
+        height: 280,
+        toolbar: {
+        show: false
+        }
+        },
 
-                labels: [
+        series: [
 
-                    'Valid',
+        validCount,
 
-                    'Expiring Soon',
+        expiringSoonCount,
 
-                    'Expired'
+        expiredCount
 
-                ],
-
-                datasets: [{
-
-                    data: [
-
-                        @Model.ValidCount,
-
-                        @Model.ExpiringSoonCount,
-
-                        @Model.ExpiredCount
-
-                    ],
-
-                    backgroundColor: [
-
-                        '#198754',
-
-                        '#FFC107',
-
-                        '#DC3545'
-
-                    ],
-
-                    borderWidth: 0
-
-                }]
-
-            },
-
-            options: {
-
-                responsive: true,
-
-                plugins: {
-
-                    legend: {
-
-                        position: 'bottom'
-
-                    }
-
-                }
-
-            }
-
-        });
-        const barCtx = document.getElementById('statusBarChart');
-
-        new Chart(barCtx, {
-
-        type: 'bar',
-
-        data: {
+        ],
 
         labels: [
 
@@ -224,21 +185,7 @@
 
         ],
 
-        datasets: [{
-
-        label: 'Documents',
-
-        data: [
-
-        @Model.ValidCount,
-
-        @Model.ExpiringSoonCount,
-
-        @Model.ExpiredCount
-
-        ],
-
-        backgroundColor: [
+        colors: [
 
         '#198754',
 
@@ -246,45 +193,140 @@
 
         '#DC3545'
 
-        ]
-
-        }]
-
-        },
-
-        options: {
-
-        responsive: true,
-
-        plugins: {
+        ],
 
         legend: {
 
-        display: false
+        position: 'bottom'
+
+        },
+
+        stroke: {
+
+        width: 0
+
+        },
+
+        dataLabels: {
+
+        enabled: true
+
+        }
+
+        };
+
+        new ApexCharts(
+        document.querySelector("#statusDonutChart"),
+        donutOptions
+        ).render();
+
+
+        // ===========================
+        // Bar Chart
+        // ===========================
+
+        var barOptions = {
+
+        chart: {
+
+        type: 'bar',
+
+        height: 280,
+
+        toolbar: {
+
+        show: false
 
         }
 
         },
 
-        scales: {
+        series: [
 
-        y: {
+        {
 
-        beginAtZero: true,
+        name: 'Documents',
 
-        ticks: {
+        data: [
 
-        precision: 0
+        validCount,
+
+        expiringSoonCount,
+
+        expiredCount
+
+        ]
 
         }
 
-        }
+        ],
+
+        xaxis: {
+
+        categories: [
+
+        'Valid',
+
+        'Expiring Soon',
+
+        'Expired'
+
+        ]
+
+        },
+
+        colors: [
+
+        '#005EB8'
+
+        ],
+
+        plotOptions: {
+
+        bar: {
+
+        borderRadius: 6,
+
+        columnWidth: '45%',
+
+        distributed: false
 
         }
 
+        },
+
+        grid: {
+
+        borderColor: '#ECECEC'
+
+        },
+
+        dataLabels: {
+
+        enabled: false
+
+        },
+
+        legend: {
+
+        show: false
+
+        },
+
+        yaxis: {
+
+        min: 0,
+
+        forceNiceScale: true
+
         }
 
-        });
+        };
+
+        new ApexCharts(
+        document.querySelector("#statusBarChart"),
+        barOptions
+        ).render();
 
     </script>
 }

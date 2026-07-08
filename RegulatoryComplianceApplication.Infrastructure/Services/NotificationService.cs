@@ -218,8 +218,9 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services
 
         private static string BuildNotificationMessage(Document document)
         {
-            var expiryDate = document.CurrentVersion!.ExpiryDate
-                .ToDateTime(TimeOnly.MinValue);
+            if (document.CurrentVersion == null)
+                throw new InvalidOperationException($"Document {document.DocumentId} has no current version.");
+            var expiryDate = document.CurrentVersion.ExpiryDate?.ToDateTime(TimeOnly.MinValue);
 
             return
                 $"{document.DocumentType.TypeName}{Environment.NewLine}{Environment.NewLine}" +

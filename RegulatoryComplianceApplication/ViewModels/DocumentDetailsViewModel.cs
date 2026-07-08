@@ -13,7 +13,7 @@
     {
         public int VersionNumber { get; set; }
         public DateOnly IssueDate { get; set; }
-        public DateOnly ExpiryDate { get; set; }
+        public DateOnly? ExpiryDate { get; set; }
         public string FilePath { get; set; } = string.Empty;
         public bool IsCurrent { get; set; }
     }

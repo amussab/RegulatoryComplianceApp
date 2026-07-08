@@ -1,30 +1,102 @@
 ﻿@model RegulatoryComplianceApplication.Web.ViewModels.CreateDocumentViewModel
 
-<h1>Add Document</h1>
+@{
+    ViewData["Title"] = "Create Document";
+}
+
+<h2>Create Document</h2>
+
 <form asp-action="Create" method="post" enctype="multipart/form-data">
+
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
     <div class="mb-3">
-        <label>Document Type</label>
-        <select asp-for="DocumentTypeId" asp-items="Model.DocumentTypes" class="form-select"></select>
+        <label asp-for="DocumentTypeId" class="form-label"></label>
+        <select asp-for="DocumentTypeId"
+                asp-items="Model.DocumentTypes"
+                class="form-select">
+            <option value="">-- Select Document Type --</option>
+        </select>
+        <span asp-validation-for="DocumentTypeId" class="text-danger"></span>
     </div>
+
     <div class="mb-3">
-        <label>Title</label>
+        <label asp-for="Title" class="form-label"></label>
         <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="text-danger"></span>
     </div>
+
     <div class="mb-3">
-        <label>Document Number</label>
+        <label asp-for="DocumentNumber" class="form-label"></label>
         <input asp-for="DocumentNumber" class="form-control" />
+        <span asp-validation-for="DocumentNumber" class="text-danger"></span>
     </div>
+
     <div class="mb-3">
-        <label>Issue Date</label>
+        <label asp-for="IssueDate" class="form-label"></label>
         <input asp-for="IssueDate" type="date" class="form-control" />
+        <span asp-validation-for="IssueDate" class="text-danger"></span>
     </div>
-    <div class="mb-3">
-        <label>Expiry Date</label>
+
+    <div class="form-check mb-3">
+        <input asp-for="IsExpirable"
+               class="form-check-input"
+               id="isExpirableCheck" />
+
+        <label asp-for="IsExpirable"
+               class="form-check-label">
+            This document expires
+        </label>
+    </div>
+
+    <div class="mb-3" id="expiryDateGroup">
+        <label asp-for="ExpiryDate" class="form-label"></label>
         <input asp-for="ExpiryDate" type="date" class="form-control" />
+        <span asp-validation-for="ExpiryDate" class="text-danger"></span>
     </div>
+
     <div class="mb-3">
-        <label>File</label>
+        <label asp-for="File" class="form-label"></label>
         <input asp-for="File" type="file" class="form-control" />
+        <span asp-validation-for="File" class="text-danger"></span>
     </div>
-    <button type="submit" class="btn btn-primary">Create</button>
+
+    <button type="submit" class="btn btn-primary">
+        Create
+    </button>
+
+    <a asp-action="Index" class="btn btn-secondary">
+        Cancel
+    </a>
+
 </form>
+
+@section Scripts
+{
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const checkbox = document.getElementById('isExpirableCheck');
+            const expiryGroup = document.getElementById('expiryDateGroup');
+            const expiryInput = expiryGroup.querySelector('input');
+
+            function toggleExpiry() {
+                if (checkbox.checked) {
+                    expiryGroup.style.display = '';
+                    expiryInput.required = true;
+                } else {
+                    expiryGroup.style.display = 'none';
+                    expiryInput.required = false;
+                    expiryInput.value = '';
+                }
+            }
+
+            checkbox.addEventListener('change', toggleExpiry);
+
+            toggleExpiry();
+
+        });
+    </script>
+}
