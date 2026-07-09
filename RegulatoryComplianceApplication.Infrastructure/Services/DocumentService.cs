@@ -154,7 +154,7 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services
 
             await _auditLogger.LogAsync(
                 deletedByUserId,
-                "Archive",
+                "Delete",
                 "Document",
                 document.DocumentId);
         }
