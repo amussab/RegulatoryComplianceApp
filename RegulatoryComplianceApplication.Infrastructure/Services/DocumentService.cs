@@ -187,7 +187,7 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services
                 existingDocument.CurrentVersion.IssueDate = currentVersion.IssueDate;
                 existingDocument.CurrentVersion.ExpiryDate = currentVersion.ExpiryDate;
 
-                if (!string.IsNullOrWhiteSpace(currentVersion.FilePath))
+                if (!string.IsNullOrWhiteSpace(currentVersion.FilePath)) 
                 {
                     existingDocument.CurrentVersion.FilePath = currentVersion.FilePath;
                 }
