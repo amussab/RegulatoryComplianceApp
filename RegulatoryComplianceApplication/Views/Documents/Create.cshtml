@@ -38,6 +38,23 @@
         <span asp-validation-for="IssueDate" class="text-danger"></span>
     </div>
 
+    <div class="mb-3">
+        <label asp-for="ResponsibleUserId" class="form-label">
+            Responsible User
+        </label>
+
+        <select asp-for="ResponsibleUserId"
+                asp-items="Model.Users"
+                class="form-select">
+
+            <option value="">-- Select Responsible User --</option>
+
+        </select>
+
+        <span asp-validation-for="ResponsibleUserId"
+              class="text-danger"></span>
+    </div>
+
     <div class="form-check mb-3">
         <input asp-for="IsExpirable"
                class="form-check-input"

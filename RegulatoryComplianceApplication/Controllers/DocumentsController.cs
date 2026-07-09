@@ -64,7 +64,10 @@ namespace RegulatoryComplianceApplication.Web.Controllers
                         Title = d.Title,
                         DocumentNumber = d.DocumentNumber,
                         ExpiryDate = expiry,
-                        Status = status
+                        Status = status,
+                        ResponsibleUser = d.ResponsibleUsers
+                            .Select(r => r.User.FullName)
+                            .FirstOrDefault() ?? "Unassigned",
                     };
                 })
                 .ToList();
@@ -94,10 +97,27 @@ namespace RegulatoryComplianceApplication.Web.Controllers
         {
             var vm = new CreateDocumentViewModel
             {
+                IssueDate = DateOnly.FromDateTime(DateTime.Today),
+
                 DocumentTypes = await _context.DocumentTypes
-                    .Select(t => new SelectListItem { Value = t.DocumentTypeId.ToString(), Text = t.TypeName })
+                    .Select(t => new SelectListItem
+                    {
+                        Value = t.DocumentTypeId.ToString(),
+                        Text = t.TypeName
+                    })
+                    .ToListAsync(),
+
+                Users = await _context.Users
+                    .Where(u => u.IsActive)
+                    .OrderBy(u => u.FullName)
+                    .Select(u => new SelectListItem
+                    {
+                        Value = u.UserId.ToString(),
+                        Text = $"{u.FullName} ({u.Role.RoleName})"
+                    })
                     .ToListAsync()
             };
+
             return View(vm);
         }
         [HttpPost]
@@ -105,7 +125,6 @@ namespace RegulatoryComplianceApplication.Web.Controllers
         [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Create(CreateDocumentViewModel vm)
         {
-
             if (vm.File == null || vm.File.Length == 0)
                 ModelState.AddModelError("File", "A file is required.");
 
@@ -115,12 +134,29 @@ namespace RegulatoryComplianceApplication.Web.Controllers
             if (!ModelState.IsValid)
             {
                 vm.DocumentTypes = await _context.DocumentTypes
-                    .Select(t => new SelectListItem { Value = t.DocumentTypeId.ToString(), Text = t.TypeName })
+                    .Select(t => new SelectListItem
+                    {
+                        Value = t.DocumentTypeId.ToString(),
+                        Text = t.TypeName
+                    })
                     .ToListAsync();
+
+                vm.Users = await _context.Users
+                    .Where(u => u.IsActive)
+                    .OrderBy(u => u.FullName)
+                    .Select(u => new SelectListItem
+                    {
+                        Value = u.UserId.ToString(),
+                        Text = $"{u.FullName} ({u.Role.RoleName})"
+                    })
+                    .ToListAsync();
+
                 return View(vm);
             }
 
-            var filePath = await _fileStorageService.SaveFileAsync(vm.File!.OpenReadStream(), vm.File.FileName);
+            var filePath = await _fileStorageService.SaveFileAsync(
+                vm.File!.OpenReadStream(),
+                vm.File.FileName);
 
             var document = new Document
             {
@@ -131,26 +167,29 @@ namespace RegulatoryComplianceApplication.Web.Controllers
                 IsExpirable = vm.IsExpirable
             };
 
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var uploadedByUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
             var firstVersion = new DocumentVersion
             {
                 FilePath = filePath,
                 IssueDate = vm.IssueDate,
-                ExpiryDate = vm.ExpiryDate,
+                ExpiryDate = vm.IsExpirable ? vm.ExpiryDate : null
             };
+
             try
             {
-                await _documentService.CreateAsync(document, firstVersion, userId);
+                await _documentService.CreateAsync(
+                    document,
+                    firstVersion,
+                    uploadedByUserId,
+                    vm.ResponsibleUserId);
 
-                return RedirectToAction("Index");
+                return RedirectToAction(nameof(Index));
             }
             catch (Exception)
             {
-
-                return BadRequest("Couldn't create a new document");
+                return BadRequest("Couldn't create a new document.");
             }
-            
         }
         public async Task<IActionResult> Details(int id)
         {

@@ -13,5 +13,7 @@ namespace RegulatoryComplianceApplication.Web.ViewModels
 
         public List<SelectListItem> DocumentTypes { get; set; } = new();
         public bool IsExpirable { get; set; } = true;
+        public int ResponsibleUserId { get; set; }
+        public List<SelectListItem> Users { get; set; } = new();
     }
 }

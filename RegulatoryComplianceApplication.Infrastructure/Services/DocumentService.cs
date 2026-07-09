@@ -29,13 +29,20 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services
         {
             return await _context.Documents
                 .Include(d => d.CurrentVersion)
+                .Include(d => d.ResponsibleUsers)
+                    .ThenInclude(ru => ru.User)
                 .Where(d => !d.IsDeleted)
                 .ToListAsync();
         }
 
-        public async Task<Document> CreateAsync(Document document, DocumentVersion firstVersion, int uploadedByUserId)
+        public async Task<Document> CreateAsync(
+            Document document,
+            DocumentVersion firstVersion,
+            int uploadedByUserId,
+            int responsibleUserId)
         {
             await using var transaction = await _context.Database.BeginTransactionAsync();
+
             try
             {
                 _context.Documents.Add(document);
@@ -45,24 +52,32 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services
                 firstVersion.VersionNumber = 1;
                 firstVersion.UploadedByUserId = uploadedByUserId;
                 firstVersion.UploadedAt = DateTime.UtcNow;
+
                 _context.DocumentVersions.Add(firstVersion);
                 await _context.SaveChangesAsync();
 
                 document.CurrentVersionId = firstVersion.DocumentVersionId;
+                await _context.SaveChangesAsync();
 
                 _context.DocumentResponsibleUsers.Add(new DocumentResponsibleUser
                 {
                     DocumentId = document.DocumentId,
-                    UserId = uploadedByUserId,
-                    IsUploader = true,
+                    UserId = responsibleUserId,
+                    IsUploader = responsibleUserId == uploadedByUserId,
                     AddedByUserId = uploadedByUserId,
                     AddedAt = DateTime.UtcNow
                 });
 
                 await _context.SaveChangesAsync();
-                await _auditLogger.LogAsync(uploadedByUserId, "Create", "Document", document.DocumentId);
+
+                await _auditLogger.LogAsync(
+                    uploadedByUserId,
+                    "Create",
+                    "Document",
+                    document.DocumentId);
 
                 await transaction.CommitAsync();
+
                 return document;
             }
             catch
@@ -121,6 +136,27 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services
                     && d.CurrentVersion.ExpiryDate <= cutoff
                     && d.CurrentVersion.ExpiryDate >= DateOnly.FromDateTime(DateTime.UtcNow))
                 .ToListAsync();
+        }
+        public async Task SoftDeleteAsync(int documentId, int deletedByUserId)
+        {
+            var document = await _context.Documents
+                .FirstOrDefaultAsync(d => d.DocumentId == documentId);
+
+            if (document == null)
+                throw new InvalidOperationException("Document not found.");
+
+            if (document.IsDeleted)
+                return;
+
+            document.IsDeleted = true;
+
+            await _context.SaveChangesAsync();
+
+            await _auditLogger.LogAsync(
+                deletedByUserId,
+                "Archive",
+                "Document",
+                document.DocumentId);
         }
     }
 }

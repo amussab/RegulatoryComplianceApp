@@ -1,7 +1,4 @@
 ﻿using RegulatoryComplianceApplication.Core.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace RegulatoryComplianceApplication.Core.Interfaces
 {
@@ -9,8 +6,16 @@ namespace RegulatoryComplianceApplication.Core.Interfaces
     {
         Task<Document?> GetByIdAsync(int documentId);
         Task<IEnumerable<Document>> GetAllAsync();
-        Task<Document> CreateAsync(Document document, DocumentVersion firstVersion, int uploadedByUserId);
+
+        Task<Document> CreateAsync(
+            Document document,
+            DocumentVersion firstVersion,
+            int uploadedByUserId,
+            int responsibleUserId);
+
         Task<DocumentVersion> RenewAsync(int documentId, DocumentVersion newVersion, int uploadedByUserId);
+
         Task<IEnumerable<Document>> GetExpiringSoonAsync(int daysThreshold);
+        Task SoftDeleteAsync(int documentId, int deletedByUserId);
     }
 }

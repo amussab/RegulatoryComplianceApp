@@ -187,23 +187,15 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services
                     !d.IsDeleted);
         }
 
-        private async Task<List<User>> GetRecipientsAsync(Document document)
+        private Task<List<User>> GetRecipientsAsync(Document document)
         {
-            var responsibleUsers = document.ResponsibleUsers
-                .Select(ru => ru.User);
-
-            var managers = await _context.Users
-                .Include(u => u.Role)
-                .Where(u =>
-                    u.IsActive &&
-                    u.Role.RoleName == ManagerRoleName)
-                .ToListAsync();
-
-            return responsibleUsers
-                .Concat(managers)
-                .GroupBy(u => u.UserId)
-                .Select(g => g.First())
+            var recipients = document.ResponsibleUsers
+                .Where(ru => ru.User.IsActive)
+                .Select(ru => ru.User)
+                .Distinct()
                 .ToList();
+
+            return Task.FromResult(recipients);
         }
 
         private async Task<bool> NotificationExistsAsync(
