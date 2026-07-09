@@ -17,10 +17,13 @@
         </p>
     </div>
 
-    <a asp-action="Create" class="btn btn-primary">
-        <i class="bi bi-plus-circle me-2"></i>
-        Add Document
-    </a>
+    @if (User.IsInRole("Administrator"))
+    {
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i>
+            Add Document
+        </a>
+    }
 
 </div>
 
@@ -31,7 +34,6 @@
         <table class="table table-hover align-middle mb-0">
 
             <thead>
-
                 <tr>
                     <th>Title</th>
                     <th>Document Number</th>
@@ -39,9 +41,13 @@
                     <th>Expiry Date</th>
                     <th>Status</th>
                     <th class="text-center">Details</th>
-                    <th>Renew</th>
-                </tr>
 
+                    @if (User.IsInRole("Administrator"))
+                    {
+                        <th>Renew</th>
+                        <th class="text-center">Delete</th>
+                    }
+                </tr>
             </thead>
 
             <tbody>
@@ -57,6 +63,7 @@
                         <td>
                             @doc.DocumentNumber
                         </td>
+
                         <td>
                             @doc.ResponsibleUser
                         </td>
@@ -81,6 +88,13 @@
                                     Expiring Soon
                                 </span>
                             }
+                            else if (doc.Status == "No Expiry")
+                            {
+                                <span class="badge bg-secondary">
+                                    <i class="bi bi-infinity me-1"></i>
+                                    No Expiry
+                                </span>
+                            }
                             else
                             {
                                 <span class="badge bg-success">
@@ -103,55 +117,86 @@
                             </a>
 
                         </td>
+                        <td class="text-center">
 
-                        <td style="min-width:280px;">
+                            @if (User.IsInRole("Administrator"))
+                            {
+                                <a asp-action="Edit"
+                                   asp-route-id="@doc.DocumentId"
+                                   class="btn btn-outline-secondary btn-sm">
 
-                            <form asp-action="Renew"
-                                  method="post"
-                                  enctype="multipart/form-data">
+                                    <i class="bi bi-pencil"></i>
+                                    Edit
 
-                                @Html.AntiForgeryToken()
-
-                                <input type="hidden"
-                                       name="id"
-                                       value="@doc.DocumentId" />
-
-                                <div class="row g-2">
-
-                                    <div class="col-md-5">
-
-                                        <input type="date"
-                                               name="newExpiryDate"
-                                               required
-                                               class="form-control form-control-sm" />
-
-                                    </div>
-
-                                    <div class="col-md-5">
-
-                                        <input type="file"
-                                               name="file"
-                                               required
-                                               class="form-control form-control-sm" />
-
-                                    </div>
-
-                                    <div class="col-md-2 d-grid">
-
-                                        <button type="submit"
-                                                class="btn btn-success btn-sm">
-
-                                            <i class="bi bi-arrow-repeat"></i>
-
-                                        </button>
-
-                                    </div>
-
-                                </div>
-
-                            </form>
+                                </a>
+                            }
 
                         </td>
+
+                        @if (User.IsInRole("Administrator"))
+                        {
+                            <td class="text-center">
+
+                                <a asp-action="Delete"
+                                   asp-route-id="@doc.DocumentId"
+                                   class="btn btn-outline-warning btn-sm">
+
+                                    <i class="bi bi-archive me-1"></i>
+                                    Delete
+
+                                </a>
+
+                            </td>
+
+                            <td style="min-width:280px;">
+
+                                <form asp-action="Renew"
+                                      method="post"
+                                      enctype="multipart/form-data">
+
+                                    @Html.AntiForgeryToken()
+
+                                    <input type="hidden"
+                                           name="id"
+                                           value="@doc.DocumentId" />
+
+                                    <div class="row g-2">
+
+                                        <div class="col-md-5">
+
+                                            <input type="date"
+                                                   name="newExpiryDate"
+                                                   required
+                                                   class="form-control form-control-sm" />
+
+                                        </div>
+
+                                        <div class="col-md-5">
+
+                                            <input type="file"
+                                                   name="file"
+                                                   required
+                                                   class="form-control form-control-sm" />
+
+                                        </div>
+
+                                        <div class="col-md-2 d-grid">
+
+                                            <button type="submit"
+                                                    class="btn btn-success btn-sm">
+
+                                                <i class="bi bi-arrow-repeat"></i>
+
+                                            </button>
+
+                                        </div>
+
+                                    </div>
+
+                                </form>
+
+                            </td>
+                        }
 
                     </tr>
                 }

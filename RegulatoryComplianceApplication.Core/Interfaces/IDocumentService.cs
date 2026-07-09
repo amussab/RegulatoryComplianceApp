@@ -17,5 +17,10 @@ namespace RegulatoryComplianceApplication.Core.Interfaces
 
         Task<IEnumerable<Document>> GetExpiringSoonAsync(int daysThreshold);
         Task SoftDeleteAsync(int documentId, int deletedByUserId);
+        Task UpdateAsync(
+            Document document,
+            DocumentVersion currentVersion,
+            int responsibleUserId,
+            int editedByUserId);
     }
 }

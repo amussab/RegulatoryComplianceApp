@@ -1,0 +1,141 @@
+﻿@model RegulatoryComplianceApplication.Web.ViewModels.EditDocumentViewModel
+
+@{
+    ViewData["Title"] = "Edit Document";
+}
+
+<h2>Edit Document</h2>
+
+<form asp-action="Edit" method="post" enctype="multipart/form-data">
+
+    <input asp-for="DocumentId" type="hidden" />
+    <input asp-for="CurrentFilePath" type="hidden" />
+
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    <div class="mb-3">
+        <label asp-for="DocumentTypeId" class="form-label"></label>
+        <select asp-for="DocumentTypeId"
+                asp-items="Model.DocumentTypes"
+                class="form-select">
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Title" class="form-label"></label>
+        <input asp-for="Title" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="DocumentNumber" class="form-label"></label>
+        <input asp-for="DocumentNumber" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="IssueDate" class="form-label"></label>
+        <input asp-for="IssueDate"
+               type="date"
+               class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="ResponsibleUserId" class="form-label">
+            Responsible User
+        </label>
+
+        <select asp-for="ResponsibleUserId"
+                asp-items="Model.Users"
+                class="form-select">
+        </select>
+    </div>
+
+    <div class="form-check mb-3">
+
+        <input asp-for="IsExpirable"
+               class="form-check-input"
+               id="isExpirableCheck" />
+
+        <label asp-for="IsExpirable"
+               class="form-check-label">
+
+            This document expires
+
+        </label>
+
+    </div>
+
+    <div class="mb-3" id="expiryDateGroup">
+
+        <label asp-for="ExpiryDate"
+               class="form-label"></label>
+
+        <input asp-for="ExpiryDate"
+               type="date"
+               class="form-control" />
+
+    </div>
+
+    <div class="mb-3">
+
+        <label class="form-label">
+
+            Replace File (optional)
+
+        </label>
+
+        <input asp-for="File"
+               type="file"
+               class="form-control" />
+
+        <small class="text-muted">
+
+            Leave empty to keep the current file.
+
+        </small>
+
+    </div>
+
+    <button type="submit"
+            class="btn btn-primary">
+
+        <i class="bi bi-floppy me-1"></i>
+
+        Save Changes
+
+    </button>
+
+    <a asp-action="Index"
+       class="btn btn-secondary">
+
+        Cancel
+
+    </a>
+
+</form>
+
+@section Scripts
+{
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const checkbox = document.getElementById('isExpirableCheck');
+            const expiryGroup = document.getElementById('expiryDateGroup');
+
+            function toggleExpiry() {
+
+                expiryGroup.style.display =
+                    checkbox.checked ? '' : 'none';
+
+            }
+
+            checkbox.addEventListener('change', toggleExpiry);
+
+            toggleExpiry();
+
+        });
+
+    </script>
+}

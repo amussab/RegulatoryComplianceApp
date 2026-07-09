@@ -93,6 +93,158 @@ namespace RegulatoryComplianceApplication.Web.Controllers
             return RedirectToAction("Index");
         }
         [Authorize(Roles = "Administrator")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var document = await _documentService.GetByIdAsync(id);
+
+            if (document == null)
+                return NotFound();
+
+            return View(document);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrator")]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+            await _documentService.SoftDeleteAsync(id, userId);
+
+            return RedirectToAction(nameof(Index));
+        }
+        [Authorize(Roles = "Administrator")]
+        public async Task<IActionResult> Edit(int id)
+        {
+            var document = await _context.Documents
+                .Include(d => d.CurrentVersion)
+                .Include(d => d.ResponsibleUsers)
+                .FirstOrDefaultAsync(d => d.DocumentId == id && !d.IsDeleted);
+
+            if (document == null)
+                return NotFound();
+
+            var vm = new EditDocumentViewModel
+            {
+                DocumentId = document.DocumentId,
+                DocumentTypeId = document.DocumentTypeId,
+                Title = document.Title,
+                DocumentNumber = document.DocumentNumber,
+                IssueDate = document.CurrentVersion!.IssueDate,
+                ExpiryDate = document.CurrentVersion.ExpiryDate,
+                IsExpirable = document.IsExpirable,
+                CurrentFilePath = document.CurrentVersion.FilePath,
+
+                ResponsibleUserId = document.ResponsibleUsers
+                    .Select(r => r.UserId)
+                    .FirstOrDefault(),
+
+                DocumentTypes = await _context.DocumentTypes
+                    .Select(t => new SelectListItem
+                    {
+                        Value = t.DocumentTypeId.ToString(),
+                        Text = t.TypeName
+                    })
+                    .ToListAsync(),
+
+                Users = await _context.Users
+                    .Include(u => u.Role)
+                    .Where(u => u.IsActive)
+                    .OrderBy(u => u.FullName)
+                    .Select(u => new SelectListItem
+                    {
+                        Value = u.UserId.ToString(),
+                        Text = $"{u.FullName} ({u.Role.RoleName})"
+                    })
+                    .ToListAsync()
+            };
+
+            return View(vm);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrator")]
+        public async Task<IActionResult> Edit(EditDocumentViewModel vm)
+        {
+            if (vm.IsExpirable && vm.ExpiryDate == null)
+            {
+                ModelState.AddModelError("ExpiryDate", "Expiry date is required for expirable documents.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                vm.DocumentTypes = await _context.DocumentTypes
+                    .Select(t => new SelectListItem
+                    {
+                        Value = t.DocumentTypeId.ToString(),
+                        Text = t.TypeName
+                    })
+                    .ToListAsync();
+
+                vm.Users = await _context.Users
+                    .Include(u => u.Role)
+                    .Where(u => u.IsActive)
+                    .OrderBy(u => u.FullName)
+                    .Select(u => new SelectListItem
+                    {
+                        Value = u.UserId.ToString(),
+                        Text = $"{u.FullName} ({u.Role.RoleName})"
+                    })
+                    .ToListAsync();
+
+                return View(vm);
+            }
+
+            var existingDocument = await _context.Documents
+                .Include(d => d.CurrentVersion)
+                .FirstOrDefaultAsync(d => d.DocumentId == vm.DocumentId);
+
+            if (existingDocument == null || existingDocument.CurrentVersion == null)
+                return NotFound();
+
+            var filePath = existingDocument.CurrentVersion.FilePath;
+
+            // Replace the file only if a new one was uploaded
+            if (vm.File != null && vm.File.Length > 0)
+            {
+                _fileStorageService.DeleteFile(filePath);
+
+                filePath = await _fileStorageService.SaveFileAsync(
+                    vm.File.OpenReadStream(),
+                    vm.File.FileName);
+            }
+
+            var document = new Document
+            {
+                DocumentId = vm.DocumentId,
+                DocumentTypeId = vm.DocumentTypeId,
+                Title = vm.Title,
+                DocumentNumber = vm.DocumentNumber,
+                IsExpirable = vm.IsExpirable
+            };
+
+            var currentVersion = new DocumentVersion
+            {
+                FilePath = filePath,
+                IssueDate = vm.IssueDate,
+                ExpiryDate = vm.IsExpirable ? vm.ExpiryDate : null
+            };
+
+            var editedByUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+            await _documentService.UpdateAsync(
+                document,
+                currentVersion,
+                vm.ResponsibleUserId,
+                editedByUserId);
+
+            TempData["Success"] = "Document updated successfully.";
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Create()
         {
             var vm = new CreateDocumentViewModel

@@ -158,5 +158,73 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services
                 "Document",
                 document.DocumentId);
         }
+        public async Task UpdateAsync(
+            Document document,
+            DocumentVersion currentVersion,
+            int responsibleUserId,
+            int editedByUserId)
+        {
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var existingDocument = await _context.Documents
+                    .Include(d => d.CurrentVersion)
+                    .Include(d => d.ResponsibleUsers)
+                    .FirstOrDefaultAsync(d => d.DocumentId == document.DocumentId);
+
+                if (existingDocument == null)
+                    throw new InvalidOperationException("Document not found.");
+
+                existingDocument.Title = document.Title;
+                existingDocument.DocumentNumber = document.DocumentNumber;
+                existingDocument.DocumentTypeId = document.DocumentTypeId;
+                existingDocument.IsExpirable = document.IsExpirable;
+
+                if (existingDocument.CurrentVersion == null)
+                    throw new InvalidOperationException("Current document version not found.");
+
+                existingDocument.CurrentVersion.IssueDate = currentVersion.IssueDate;
+                existingDocument.CurrentVersion.ExpiryDate = currentVersion.ExpiryDate;
+
+                if (!string.IsNullOrWhiteSpace(currentVersion.FilePath))
+                {
+                    existingDocument.CurrentVersion.FilePath = currentVersion.FilePath;
+                }
+
+                var oldResponsible = existingDocument.ResponsibleUsers.FirstOrDefault();
+
+                if (oldResponsible != null)
+                {
+                    _context.DocumentResponsibleUsers.Remove(oldResponsible);
+
+                    await _context.SaveChangesAsync();
+                }
+
+                _context.DocumentResponsibleUsers.Add(new DocumentResponsibleUser
+                {
+                    DocumentId = existingDocument.DocumentId,
+                    UserId = responsibleUserId,
+                    IsUploader = responsibleUserId == currentVersion.UploadedByUserId,
+                    AddedByUserId = editedByUserId,
+                    AddedAt = DateTime.UtcNow
+                });
+
+                await _context.SaveChangesAsync();
+
+                await _auditLogger.LogAsync(
+                    editedByUserId,
+                    "Edit",
+                    "Document",
+                    existingDocument.DocumentId);
+
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
     }
 }
