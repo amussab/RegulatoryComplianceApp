@@ -67,6 +67,22 @@
 
                         </li>
 
+                        @if (User.IsInRole("Administrator"))
+                        {
+                            <li class="nav-item">
+
+                                <a class="nav-link"
+                                   asp-controller="Users"
+                                   asp-action="Index">
+
+                                    <i class="bi bi-people me-1"></i>
+                                    Users
+
+                                </a>
+
+                            </li>
+                        }
+
                         <li class="nav-item">
 
                             <a class="nav-link"

@@ -1,0 +1,54 @@
+﻿@model IEnumerable<RegulatoryComplianceApplication.Core.Entities.User>
+
+@{
+    ViewData["Title"] = "Users";
+}
+
+<h2>User Management</h2>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Success"]
+    </div>
+}
+
+<p>
+    <a asp-action="Create" class="btn btn-success">
+        Create User
+    </a>
+</p>
+
+<table class="table table-bordered table-striped">
+
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Active</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        @foreach (var user in Model)
+        {
+            <tr>
+
+                <td>@user.FullName</td>
+
+                <td>@user.Email</td>
+
+                <td>@user.Role.RoleName</td>
+
+                <td>
+                    @(user.IsActive ? "Yes" : "No")
+                </td>
+
+            </tr>
+        }
+
+    </tbody>
+
+</table>
