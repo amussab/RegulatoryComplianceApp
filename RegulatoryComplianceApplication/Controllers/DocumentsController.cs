@@ -74,11 +74,13 @@ namespace RegulatoryComplianceApplication.Web.Controllers
 
             return View(viewModels);
         }
-        [Authorize(Roles = "Administrator")]
+        [Authorize]
         [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> Renew(int id, DateOnly? newExpiryDate, IFormFile file)
         {
+            if (!await CanManageDocument(id))
+                return Forbid();
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
             var filePath = await _fileStorageService.SaveFileAsync(file.OpenReadStream(), file.FileName);
 
@@ -114,7 +116,7 @@ namespace RegulatoryComplianceApplication.Web.Controllers
 
             return RedirectToAction(nameof(Index));
         }
-        [Authorize(Roles = "Administrator")]
+        [Authorize]
         public async Task<IActionResult> Edit(int id)
         {
             var document = await _context.Documents
@@ -124,6 +126,8 @@ namespace RegulatoryComplianceApplication.Web.Controllers
 
             if (document == null)
                 return NotFound();
+            if (!await CanManageDocument(id))
+                return Forbid();
 
             var vm = new EditDocumentViewModel
             {
@@ -164,9 +168,11 @@ namespace RegulatoryComplianceApplication.Web.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Administrator")]
+        [Authorize]
         public async Task<IActionResult> Edit(EditDocumentViewModel vm)
         {
+            if (!await CanManageDocument(vm.DocumentId))
+                return Forbid();
             if (vm.IsExpirable && vm.ExpiryDate == null)
             {
                 ModelState.AddModelError("ExpiryDate", "Expiry date is required for expirable documents.");
@@ -311,7 +317,7 @@ namespace RegulatoryComplianceApplication.Web.Controllers
                 vm.File.FileName);
 
             var selectedType = await _context.DocumentTypes
-    .FirstOrDefaultAsync(t => t.DocumentTypeId == vm.DocumentTypeId);
+            .FirstOrDefaultAsync(t => t.DocumentTypeId == vm.DocumentTypeId);
 
             if (selectedType == null)
             {
@@ -432,6 +438,17 @@ namespace RegulatoryComplianceApplication.Web.Controllers
             }
 
             return View(vm);
+        }
+        private async Task<bool> CanManageDocument(int documentId)
+        {
+            if (User.IsInRole("Administrator"))
+                return true;
+
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+            return await _context.DocumentResponsibleUsers.AnyAsync(r =>
+                r.DocumentId == documentId &&
+                r.UserId == userId);
         }
     }
 }
