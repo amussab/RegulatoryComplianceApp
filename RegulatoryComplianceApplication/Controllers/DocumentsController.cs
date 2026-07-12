@@ -310,6 +310,39 @@ namespace RegulatoryComplianceApplication.Web.Controllers
                 vm.File!.OpenReadStream(),
                 vm.File.FileName);
 
+            var selectedType = await _context.DocumentTypes
+    .FirstOrDefaultAsync(t => t.DocumentTypeId == vm.DocumentTypeId);
+
+            if (selectedType == null)
+            {
+                ModelState.AddModelError("DocumentTypeId", "Please select a valid document type.");
+
+                vm.DocumentTypes = await _context.DocumentTypes
+                    .Select(t => new SelectListItem
+                    {
+                        Value = t.DocumentTypeId.ToString(),
+                        Text = t.TypeName
+                    })
+                    .ToListAsync();
+
+                vm.Users = await _context.Users
+                    .Where(u => u.IsActive)
+                    .OrderBy(u => u.FullName)
+                    .Select(u => new SelectListItem
+                    {
+                        Value = u.UserId.ToString(),
+                        Text = $"{u.FullName} ({u.Role.RoleName})"
+                    })
+                    .ToListAsync();
+
+                return View(vm);
+            }
+
+            if (!selectedType.TypeName.Equals("Other", StringComparison.OrdinalIgnoreCase))
+            {
+                vm.Title = selectedType.TypeName;
+            }
+
             var document = new Document
             {
                 DocumentTypeId = vm.DocumentTypeId,

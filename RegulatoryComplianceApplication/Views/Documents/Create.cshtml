@@ -14,13 +14,14 @@
         <label asp-for="DocumentTypeId" class="form-label"></label>
         <select asp-for="DocumentTypeId"
                 asp-items="Model.DocumentTypes"
-                class="form-select">
+                class="form-select"
+                id="documentTypeSelect">
             <option value="">-- Select Document Type --</option>
         </select>
         <span asp-validation-for="DocumentTypeId" class="text-danger"></span>
     </div>
 
-    <div class="mb-3">
+    <div class="mb-3" id="titleGroup">
         <label asp-for="Title" class="form-label"></label>
         <input asp-for="Title" class="form-control" />
         <span asp-validation-for="Title" class="text-danger"></span>
@@ -95,24 +96,53 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
 
-            const checkbox = document.getElementById('isExpirableCheck');
-            const expiryGroup = document.getElementById('expiryDateGroup');
-            const expiryInput = expiryGroup.querySelector('input');
+        const checkbox = document.getElementById('isExpirableCheck');
+        const expiryGroup = document.getElementById('expiryDateGroup');
+        const expiryInput = expiryGroup.querySelector('input');
 
-            function toggleExpiry() {
-                if (checkbox.checked) {
-                    expiryGroup.style.display = '';
-                    expiryInput.required = true;
-                } else {
-                    expiryGroup.style.display = 'none';
-                    expiryInput.required = false;
-                    expiryInput.value = '';
-                }
-            }
+        const typeSelect = document.getElementById('documentTypeSelect');
+        const titleGroup = document.getElementById('titleGroup');
+        const titleInput = document.getElementById('Title');
 
-            checkbox.addEventListener('change', toggleExpiry);
+        function toggleExpiry() {
+        if (checkbox.checked) {
+        expiryGroup.style.display = '';
+        expiryInput.required = true;
+        } else {
+        expiryGroup.style.display = 'none';
+        expiryInput.required = false;
+        expiryInput.value = '';
+        }
+        }
 
-            toggleExpiry();
+        function toggleTitle() {
+
+        const selectedText =
+        typeSelect.options[typeSelect.selectedIndex].text.trim();
+
+        if (selectedText === "Other" ||
+        selectedText === "-- Select Document Type --") {
+
+        titleGroup.style.display = "";
+        titleInput.readOnly = false;
+
+        if (selectedText === "-- Select Document Type --")
+        titleInput.value = "";
+
+        } else {
+
+        titleGroup.style.display = "none";
+        titleInput.value = selectedText;
+        titleInput.readOnly = true;
+
+        }
+        }
+
+        checkbox.addEventListener('change', toggleExpiry);
+        typeSelect.addEventListener('change', toggleTitle);
+
+        toggleExpiry();
+        toggleTitle();
 
         });
     </script>
