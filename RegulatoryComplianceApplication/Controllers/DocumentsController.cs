@@ -75,24 +75,52 @@ namespace RegulatoryComplianceApplication.Web.Controllers
             return View(viewModels);
         }
         [Authorize]
-        [ValidateAntiForgeryToken]
-        [HttpPost]
-        public async Task<IActionResult> Renew(int id, DateOnly? newExpiryDate, IFormFile file)
+        public async Task<IActionResult> Renew(int id)
         {
             if (!await CanManageDocument(id))
                 return Forbid();
+
+            var document = await _documentService.GetByIdAsync(id);
+
+            if (document == null)
+                return NotFound();
+
+            var vm = new RenewDocumentViewModel
+            {
+                DocumentId = document.DocumentId,
+                Title = document.Title,
+                DocumentNumber = document.DocumentNumber
+            };
+
+            return View(vm);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize]
+        public async Task<IActionResult> Renew(RenewDocumentViewModel vm)
+        {
+            if (!await CanManageDocument(vm.DocumentId))
+                return Forbid();
+
+            if (!ModelState.IsValid)
+                return View(vm);
+
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-            var filePath = await _fileStorageService.SaveFileAsync(file.OpenReadStream(), file.FileName);
+
+            var filePath = await _fileStorageService.SaveFileAsync(
+                vm.File!.OpenReadStream(),
+                vm.File.FileName);
 
             var newVersion = new DocumentVersion
             {
                 FilePath = filePath,
                 IssueDate = DateOnly.FromDateTime(DateTime.UtcNow),
-                ExpiryDate = newExpiryDate
+                ExpiryDate = vm.NewExpiryDate
             };
 
-            await _documentService.RenewAsync(id, newVersion, userId);
-            return RedirectToAction("Index");
+            await _documentService.RenewAsync(vm.DocumentId, newVersion, userId);
+
+            return RedirectToAction(nameof(Index));
         }
         [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Delete(int id)

@@ -64,5 +64,47 @@ namespace RegulatoryComplianceApplication.Web.Controllers
                 return View(vm);
             }
         }
+        public async Task<IActionResult> Edit(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+
+            if (user == null)
+                return NotFound();
+
+            var vm = new EditUserViewModel
+            {
+                UserId = user.UserId,
+                FullName = user.FullName,
+                Email = user.Email,
+                RoleId = user.RoleId,
+                IsActive = user.IsActive
+            };
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(EditUserViewModel vm)
+        {
+            if (!ModelState.IsValid)
+                return View(vm);
+
+            var user = await _context.Users.FindAsync(vm.UserId);
+
+            if (user == null)
+                return NotFound();
+
+            user.FullName = vm.FullName;
+            user.Email = vm.Email;
+            user.RoleId = vm.RoleId;
+            user.IsActive = vm.IsActive;
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "User updated successfully.";
+
+            return RedirectToAction(nameof(Index));
+        }
     }
 }

@@ -1,0 +1,51 @@
+﻿@model RegulatoryComplianceApplication.Web.ViewModels.RenewDocumentViewModel
+
+@{
+    ViewData["Title"] = "Renew Document";
+}
+
+<h2>Renew Document</h2>
+
+<form asp-action="Renew" method="post" enctype="multipart/form-data">
+
+    <input asp-for="DocumentId" type="hidden" />
+
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label class="form-label">Title</label>
+        <input asp-for="Title" class="form-control" readonly />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Document Number</label>
+        <input asp-for="DocumentNumber" class="form-control" readonly />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="NewExpiryDate" class="form-label"></label>
+        <input asp-for="NewExpiryDate" type="date" class="form-control" />
+        <span asp-validation-for="NewExpiryDate" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="File" class="form-label">New Document File</label>
+        <input asp-for="File" type="file" class="form-control" />
+        <span asp-validation-for="File" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-success">
+        <i class="bi bi-arrow-repeat me-1"></i>
+        Renew Document
+    </button>
+
+    <a asp-action="Index" class="btn btn-secondary">
+        Cancel
+    </a>
+
+</form>
+
+@section Scripts
+{
+    <partial name="_ValidationScriptsPartial" />
+}

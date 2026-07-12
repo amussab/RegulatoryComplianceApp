@@ -27,6 +27,7 @@
             <th>Email</th>
             <th>Role</th>
             <th>Active</th>
+            <th>Edit</th>
         </tr>
     </thead>
 
@@ -43,7 +44,26 @@
                 <td>@user.Role.RoleName</td>
 
                 <td>
-                    @(user.IsActive ? "Yes" : "No")
+                    @if (user.IsActive)
+                    {
+                        <span class="badge bg-success">Active</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Inactive</span>
+                    }
+                </td>
+                <td>
+
+                    <a asp-action="Edit"
+                       asp-route-id="@user.UserId"
+                       class="btn btn-outline-primary btn-sm">
+
+                        <i class="bi bi-pencil"></i>
+                        Edit
+
+                    </a>
+
                 </td>
 
             </tr>

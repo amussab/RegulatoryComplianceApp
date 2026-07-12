@@ -154,52 +154,16 @@
                             </td>
                         }
 
-                        <td style="min-width:280px;">
+                        <td class="text-center">
 
-                            <form asp-action="Renew"
-                                  method="post"
-                                  enctype="multipart/form-data">
+                            <a asp-action="Renew"
+                               asp-route-id="@doc.DocumentId"
+                               class="btn btn-outline-success btn-sm">
 
-                                @Html.AntiForgeryToken()
+                                <i class="bi bi-arrow-repeat"></i>
+                                Renew
 
-                                <input type="hidden"
-                                       name="id"
-                                       value="@doc.DocumentId" />
-
-                                <div class="row g-2">
-
-                                    <div class="col-md-5">
-
-                                        <input type="date"
-                                               name="newExpiryDate"
-                                               required
-                                               class="form-control form-control-sm" />
-
-                                    </div>
-
-                                    <div class="col-md-5">
-
-                                        <input type="file"
-                                               name="file"
-                                               required
-                                               class="form-control form-control-sm" />
-
-                                    </div>
-
-                                    <div class="col-md-2 d-grid">
-
-                                        <button type="submit"
-                                                class="btn btn-success btn-sm">
-
-                                            <i class="bi bi-arrow-repeat"></i>
-
-                                        </button>
-
-                                    </div>
-
-                                </div>
-
-                            </form>
+                            </a>
 
                         </td>
 
