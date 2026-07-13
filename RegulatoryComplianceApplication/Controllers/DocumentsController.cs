@@ -37,7 +37,7 @@ namespace RegulatoryComplianceApplication.Web.Controllers
 
                     string status;
 
-                    if (!d.IsExpirable)
+                    if (!d.DocumentType.IsExpirable)
                     {
                         status = "No Expiry";
                     }
@@ -165,7 +165,6 @@ namespace RegulatoryComplianceApplication.Web.Controllers
                 DocumentNumber = document.DocumentNumber,
                 IssueDate = document.CurrentVersion!.IssueDate,
                 ExpiryDate = document.CurrentVersion.ExpiryDate,
-                IsExpirable = document.IsExpirable,
                 CurrentFilePath = document.CurrentVersion.FilePath,
 
                 ResponsibleUserId = document.ResponsibleUsers
@@ -201,7 +200,10 @@ namespace RegulatoryComplianceApplication.Web.Controllers
         {
             if (!await CanManageDocument(vm.DocumentId))
                 return Forbid();
-            if (vm.IsExpirable && vm.ExpiryDate == null)
+            var selectedType = await _context.DocumentTypes
+            .FirstAsync(t => t.DocumentTypeId == vm.DocumentTypeId);
+
+            if (selectedType.IsExpirable && vm.ExpiryDate == null)
             {
                 ModelState.AddModelError("ExpiryDate", "Expiry date is required for expirable documents.");
             }
@@ -254,15 +256,14 @@ namespace RegulatoryComplianceApplication.Web.Controllers
                 DocumentId = vm.DocumentId,
                 DocumentTypeId = vm.DocumentTypeId,
                 Title = vm.Title,
-                DocumentNumber = vm.DocumentNumber,
-                IsExpirable = vm.IsExpirable
+                DocumentNumber = vm.DocumentNumber
             };
 
             var currentVersion = new DocumentVersion
             {
                 FilePath = filePath,
                 IssueDate = vm.IssueDate,
-                ExpiryDate = vm.IsExpirable ? vm.ExpiryDate : null
+                ExpiryDate = selectedType.IsExpirable ? vm.ExpiryDate : null
             };
 
             var editedByUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
@@ -286,11 +287,17 @@ namespace RegulatoryComplianceApplication.Web.Controllers
                 IssueDate = DateOnly.FromDateTime(DateTime.Today),
 
                 DocumentTypes = await _context.DocumentTypes
+                    .Where(t => !t.IsDeleted)
                     .Select(t => new SelectListItem
                     {
                         Value = t.DocumentTypeId.ToString(),
                         Text = t.TypeName
                     })
+                    .ToListAsync(),
+
+                ExpirableDocumentTypeIds = await _context.DocumentTypes
+                    .Where(t => t.IsExpirable && !t.IsDeleted)
+                    .Select(t => t.DocumentTypeId)
                     .ToListAsync(),
 
                 Users = await _context.Users
@@ -313,37 +320,6 @@ namespace RegulatoryComplianceApplication.Web.Controllers
         {
             if (vm.File == null || vm.File.Length == 0)
                 ModelState.AddModelError("File", "A file is required.");
-
-            if (vm.IsExpirable && vm.ExpiryDate == null)
-                ModelState.AddModelError("ExpiryDate", "Expiry date is required for expirable documents.");
-
-            if (!ModelState.IsValid)
-            {
-                vm.DocumentTypes = await _context.DocumentTypes
-                    .Select(t => new SelectListItem
-                    {
-                        Value = t.DocumentTypeId.ToString(),
-                        Text = t.TypeName
-                    })
-                    .ToListAsync();
-
-                vm.Users = await _context.Users
-                    .Where(u => u.IsActive)
-                    .OrderBy(u => u.FullName)
-                    .Select(u => new SelectListItem
-                    {
-                        Value = u.UserId.ToString(),
-                        Text = $"{u.FullName} ({u.Role.RoleName})"
-                    })
-                    .ToListAsync();
-
-                return View(vm);
-            }
-
-            var filePath = await _fileStorageService.SaveFileAsync(
-                vm.File!.OpenReadStream(),
-                vm.File.FileName);
-
             var selectedType = await _context.DocumentTypes
             .FirstOrDefaultAsync(t => t.DocumentTypeId == vm.DocumentTypeId);
 
@@ -372,6 +348,44 @@ namespace RegulatoryComplianceApplication.Web.Controllers
                 return View(vm);
             }
 
+
+            if (selectedType.IsExpirable && vm.ExpiryDate == null)
+                ModelState.AddModelError("ExpiryDate", "Expiry date is required for expirable documents.");
+
+            if (!ModelState.IsValid)
+            {
+                vm.DocumentTypes = await _context.DocumentTypes
+                    .Select(t => new SelectListItem
+                    {
+                        Value = t.DocumentTypeId.ToString(),
+                        Text = t.TypeName
+                    })
+                    .ToListAsync();
+
+                vm.Users = await _context.Users
+                    .Where(u => u.IsActive)
+                    .OrderBy(u => u.FullName)
+                    .Select(u => new SelectListItem
+                    {
+                        Value = u.UserId.ToString(),
+                        Text = $"{u.FullName} ({u.Role.RoleName})"
+                    })
+                    .ToListAsync();
+
+                vm.ExpirableDocumentTypeIds = await _context.DocumentTypes
+                .Where(t => t.IsExpirable && !t.IsDeleted)
+                .Select(t => t.DocumentTypeId)
+                .ToListAsync();
+
+                return View(vm);
+            }
+
+            var filePath = await _fileStorageService.SaveFileAsync(
+                vm.File!.OpenReadStream(),
+                vm.File.FileName);
+
+            
+
             if (!selectedType.TypeName.Equals("Other", StringComparison.OrdinalIgnoreCase))
             {
                 vm.Title = selectedType.TypeName;
@@ -383,7 +397,6 @@ namespace RegulatoryComplianceApplication.Web.Controllers
                 Title = vm.Title,
                 DocumentNumber = vm.DocumentNumber,
                 CreatedAt = DateTime.UtcNow,
-                IsExpirable = vm.IsExpirable
             };
 
             var uploadedByUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
@@ -392,7 +405,7 @@ namespace RegulatoryComplianceApplication.Web.Controllers
             {
                 FilePath = filePath,
                 IssueDate = vm.IssueDate,
-                ExpiryDate = vm.IsExpirable ? vm.ExpiryDate : null
+                ExpiryDate = selectedType.IsExpirable ? vm.ExpiryDate : null
             };
 
             try
@@ -456,7 +469,7 @@ namespace RegulatoryComplianceApplication.Web.Controllers
             var cutoff = today.AddDays(60);
 
             var vm = new DashboardViewModel();
-            foreach (var d in documents.Where(d => d.IsExpirable))
+            foreach (var d in documents.Where(d => d.DocumentType.IsExpirable))
             {
                 var expiry = d.CurrentVersion?.ExpiryDate;
                 if (expiry == null) continue;

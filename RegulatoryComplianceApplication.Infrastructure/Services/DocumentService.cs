@@ -19,6 +19,7 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services
         public async Task<Document?> GetByIdAsync(int documentId)
         {
             return await _context.Documents
+                .Include(d => d.DocumentType)
                 .Include(d => d.CurrentVersion)
                 .Include(d => d.ResponsibleUsers).ThenInclude(r => r.User)
                 .Include(d => d.Versions)
@@ -28,6 +29,7 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services
         public async Task<IEnumerable<Document>> GetAllAsync()
         {
             return await _context.Documents
+                .Include(d => d.DocumentType)
                 .Include(d => d.CurrentVersion)
                 .Include(d => d.ResponsibleUsers)
                     .ThenInclude(ru => ru.User)
@@ -129,9 +131,11 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services
             var cutoff = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(daysThreshold));
 
             return await _context.Documents
+                
+                .Include(d => d.DocumentType)
                 .Include(d => d.CurrentVersion)
                 .Where(d => !d.IsDeleted
-                    && d.IsExpirable
+                    && d.DocumentType.IsExpirable
                     && d.CurrentVersion != null
                     && d.CurrentVersion.ExpiryDate <= cutoff
                     && d.CurrentVersion.ExpiryDate >= DateOnly.FromDateTime(DateTime.UtcNow))
@@ -169,6 +173,7 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services
             try
             {
                 var existingDocument = await _context.Documents
+                    .Include(d => d.DocumentType)
                     .Include(d => d.CurrentVersion)
                     .Include(d => d.ResponsibleUsers)
                     .FirstOrDefaultAsync(d => d.DocumentId == document.DocumentId);
@@ -179,7 +184,6 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services
                 existingDocument.Title = document.Title;
                 existingDocument.DocumentNumber = document.DocumentNumber;
                 existingDocument.DocumentTypeId = document.DocumentTypeId;
-                existingDocument.IsExpirable = document.IsExpirable;
 
                 if (existingDocument.CurrentVersion == null)
                     throw new InvalidOperationException("Current document version not found.");

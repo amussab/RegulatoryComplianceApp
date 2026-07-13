@@ -53,7 +53,7 @@ namespace RegulatoryComplianceApplication.Infrastructure.Data
 
             modelBuilder.Entity<Document>()
                 .HasOne(d => d.DocumentType)
-                .WithMany()
+                .WithMany(dt => dt.Documents)
                 .HasForeignKey(d => d.DocumentTypeId)
                 .OnDelete(DeleteBehavior.Restrict);
 

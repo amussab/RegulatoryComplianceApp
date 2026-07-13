@@ -1,0 +1,55 @@
+﻿@model RegulatoryComplianceApplication.Core.Entities.DocumentType
+
+@{
+    ViewData["Title"] = "Delete Document Type";
+}
+
+<h2>Delete Document Type</h2>
+
+<div class="alert alert-warning">
+    This will archive the document type. It will no longer be available when creating new documents.
+</div>
+
+<dl class="row">
+
+    <dt class="col-sm-3">
+        Type Name
+    </dt>
+
+    <dd class="col-sm-9">
+        @Model.TypeName
+    </dd>
+
+    <dt class="col-sm-3">
+        Expirable
+    </dt>
+
+    <dd class="col-sm-9">
+        @(Model.IsExpirable ? "Yes" : "No")
+    </dd>
+
+</dl>
+
+<form asp-action="DeleteConfirmed" method="post">
+
+    @Html.AntiForgeryToken()
+
+    <input type="hidden"
+           name="id"
+           value="@Model.DocumentTypeId" />
+
+    <button type="submit"
+            class="btn btn-danger">
+
+        Archive
+
+    </button>
+
+    <a asp-action="Index"
+       class="btn btn-secondary">
+
+        Cancel
+
+    </a>
+
+</form>

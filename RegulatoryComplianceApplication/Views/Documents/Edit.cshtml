@@ -49,20 +49,6 @@
         </select>
     </div>
 
-    <div class="form-check mb-3">
-
-        <input asp-for="IsExpirable"
-               class="form-check-input"
-               id="isExpirableCheck" />
-
-        <label asp-for="IsExpirable"
-               class="form-check-label">
-
-            This document expires
-
-        </label>
-
-    </div>
 
     <div class="mb-3" id="expiryDateGroup">
 
@@ -121,19 +107,9 @@
 
         document.addEventListener('DOMContentLoaded', function () {
 
-            const checkbox = document.getElementById('isExpirableCheck');
+          
             const expiryGroup = document.getElementById('expiryDateGroup');
 
-            function toggleExpiry() {
-
-                expiryGroup.style.display =
-                    checkbox.checked ? '' : 'none';
-
-            }
-
-            checkbox.addEventListener('change', toggleExpiry);
-
-            toggleExpiry();
 
         });
 

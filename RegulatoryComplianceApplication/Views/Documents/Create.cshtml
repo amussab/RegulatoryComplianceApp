@@ -56,17 +56,6 @@
               class="text-danger"></span>
     </div>
 
-    <div class="form-check mb-3">
-        <input asp-for="IsExpirable"
-               class="form-check-input"
-               id="isExpirableCheck" />
-
-        <label asp-for="IsExpirable"
-               class="form-check-label">
-            This document expires
-        </label>
-    </div>
-
     <div class="mb-3" id="expiryDateGroup">
         <label asp-for="ExpiryDate" class="form-label"></label>
         <input asp-for="ExpiryDate" type="date" class="form-control" />
@@ -96,24 +85,14 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
 
-        const checkbox = document.getElementById('isExpirableCheck');
+        
         const expiryGroup = document.getElementById('expiryDateGroup');
         const expiryInput = expiryGroup.querySelector('input');
 
         const typeSelect = document.getElementById('documentTypeSelect');
+        const expirableTypes = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ExpirableDocumentTypeIds));
         const titleGroup = document.getElementById('titleGroup');
         const titleInput = document.getElementById('Title');
-
-        function toggleExpiry() {
-        if (checkbox.checked) {
-        expiryGroup.style.display = '';
-        expiryInput.required = true;
-        } else {
-        expiryGroup.style.display = 'none';
-        expiryInput.required = false;
-        expiryInput.value = '';
-        }
-        }
 
         function toggleTitle() {
 
@@ -137,12 +116,29 @@
 
         }
         }
+                function toggleExpiry() {
 
-        checkbox.addEventListener('change', toggleExpiry);
-        typeSelect.addEventListener('change', toggleTitle);
+            const selectedId = parseInt(typeSelect.value);
 
-        toggleExpiry();
+            if (expirableTypes.includes(selectedId)) {
+                expiryGroup.style.display = "";
+                expiryInput.required = true;
+            }
+            else {
+                expiryGroup.style.display = "none";
+                expiryInput.required = false;
+                expiryInput.value = "";
+            }
+        }
+
+        
+                typeSelect.addEventListener('change', function () {
+            toggleTitle();
+            toggleExpiry();
+        });
+
         toggleTitle();
+        toggleExpiry();
 
         });
     </script>
