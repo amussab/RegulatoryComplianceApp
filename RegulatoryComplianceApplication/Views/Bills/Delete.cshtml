@@ -1,0 +1,44 @@
+﻿@model RegulatoryComplianceApplication.Core.Entities.Bill
+
+@{
+    ViewData["Title"] = "Delete Bill";
+}
+
+<h2>Delete Bill</h2>
+
+<div class="alert alert-warning">
+    This will archive the bill.
+</div>
+
+<dl class="row">
+
+    <dt class="col-sm-3">Bill</dt>
+    <dd class="col-sm-9">@Model.BillName</dd>
+
+    <dt class="col-sm-3">Amount</dt>
+    <dd class="col-sm-9">@Model.Amount</dd>
+
+    <dt class="col-sm-3">Due Date</dt>
+    <dd class="col-sm-9">@Model.DueDate</dd>
+
+</dl>
+
+<form asp-action="DeleteConfirmed" method="post">
+
+    @Html.AntiForgeryToken()
+
+    <input type="hidden"
+           name="id"
+           value="@Model.BillId" />
+
+    <button type="submit"
+            class="btn btn-danger">
+        Archive
+    </button>
+
+    <a asp-action="Index"
+       class="btn btn-secondary">
+        Cancel
+    </a>
+
+</form>

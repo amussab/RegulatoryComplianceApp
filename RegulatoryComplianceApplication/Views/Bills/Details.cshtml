@@ -1,0 +1,46 @@
+﻿@model RegulatoryComplianceApplication.Core.Entities.Bill
+
+@{
+    ViewData["Title"] = "Bill Details";
+}
+
+<h2>Bill Details</h2>
+
+<table class="table table-bordered">
+
+    <tr>
+        <th>Bill</th>
+        <td>@Model.BillName</td>
+    </tr>
+
+    <tr>
+        <th>Amount</th>
+        <td>@Model.Amount</td>
+    </tr>
+
+    <tr>
+        <th>Due Date</th>
+        <td>@Model.DueDate</td>
+    </tr>
+
+    <tr>
+        <th>Frequency</th>
+        <td>@Model.Frequency</td>
+    </tr>
+
+    <tr>
+        <th>Status</th>
+        <td>@Model.Status</td>
+    </tr>
+
+    <tr>
+        <th>Responsible User</th>
+        <td>@Model.User.FullName</td>
+    </tr>
+
+</table>
+
+<a asp-action="Index"
+   class="btn btn-secondary">
+    Back
+</a>

@@ -12,8 +12,8 @@ using RegulatoryComplianceApplication.Infrastructure.Data;
 namespace RegulatoryComplianceApplication.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260708092707_AddIsExpirableToDocuments")]
-    partial class AddIsExpirableToDocuments
+    [Migration("20260716122616_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -90,9 +90,6 @@ namespace RegulatoryComplianceApplication.Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsExpirable")
-                        .HasColumnType("bit");
-
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -140,6 +137,12 @@ namespace RegulatoryComplianceApplication.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DocumentTypeId"));
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsExpirable")
+                        .HasColumnType("bit");
+
                     b.Property<string>("TypeName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -160,7 +163,7 @@ namespace RegulatoryComplianceApplication.Infrastructure.Migrations
                     b.Property<int>("DocumentId")
                         .HasColumnType("int");
 
-                    b.Property<DateOnly>("ExpiryDate")
+                    b.Property<DateOnly?>("ExpiryDate")
                         .HasColumnType("date");
 
                     b.Property<string>("FilePath")
@@ -312,7 +315,7 @@ namespace RegulatoryComplianceApplication.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("RegulatoryComplianceApplication.Core.Entities.DocumentType", "DocumentType")
-                        .WithMany()
+                        .WithMany("Documents")
                         .HasForeignKey("DocumentTypeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -403,6 +406,11 @@ namespace RegulatoryComplianceApplication.Infrastructure.Migrations
                     b.Navigation("ResponsibleUsers");
 
                     b.Navigation("Versions");
+                });
+
+            modelBuilder.Entity("RegulatoryComplianceApplication.Core.Entities.DocumentType", b =>
+                {
+                    b.Navigation("Documents");
                 });
 
             modelBuilder.Entity("RegulatoryComplianceApplication.Core.Entities.Role", b =>

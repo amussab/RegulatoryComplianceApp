@@ -1,0 +1,77 @@
+﻿@model RegulatoryComplianceApplication.Web.ViewModels.EditBillViewModel
+
+@{
+    ViewData["Title"] = "Edit Bill";
+}
+
+<h2>Edit Bill</h2>
+
+<form asp-action="Edit" method="post" enctype="multipart/form-data">
+
+    <input asp-for="BillId" type="hidden" />
+
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="BillName" class="form-label"></label>
+        <input asp-for="BillName" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Amount" class="form-label"></label>
+        <input asp-for="Amount" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="DueDate" class="form-label"></label>
+        <input asp-for="DueDate" type="date" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Frequency" class="form-label"></label>
+        <select asp-for="Frequency"
+                asp-items="Html.GetEnumSelectList<RegulatoryComplianceApplication.Core.Entities.BillFrequency>()"
+                class="form-select">
+        </select>
+    </div>
+
+    <div class="form-check mb-3">
+        <input asp-for="IsRecurring" class="form-check-input" />
+        <label asp-for="IsRecurring" class="form-check-label"></label>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Status" class="form-label"></label>
+        <select asp-for="Status"
+                asp-items="Html.GetEnumSelectList<RegulatoryComplianceApplication.Core.Entities.BillStatus>()"
+                class="form-select">
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="UserId" class="form-label">Responsible User</label>
+        <select asp-for="UserId"
+                asp-items="Model.Users"
+                class="form-select">
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Attachment" class="form-label"></label>
+        <input asp-for="Attachment" type="file" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Save Changes
+    </button>
+
+    <a asp-action="Index" class="btn btn-secondary">
+        Cancel
+    </a>
+
+</form>
+
+@section Scripts
+{
+    <partial name="_ValidationScriptsPartial" />
+}

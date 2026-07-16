@@ -10,5 +10,6 @@
         public Role Role { get; set; } = null!;
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; }
+        public ICollection<Bill> Bills { get; set; } = new List<Bill>();
     }
 }

@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace RegulatoryComplianceApplication.Infrastructure.Migrations
 {
     /// <inheritdoc />
@@ -17,7 +19,9 @@ namespace RegulatoryComplianceApplication.Infrastructure.Migrations
                 {
                     DocumentTypeId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    TypeName = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    TypeName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsExpirable = table.Column<bool>(type: "bit", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -148,7 +152,7 @@ namespace RegulatoryComplianceApplication.Infrastructure.Migrations
                     VersionNumber = table.Column<int>(type: "int", nullable: false),
                     FilePath = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     IssueDate = table.Column<DateOnly>(type: "date", nullable: false),
-                    ExpiryDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    ExpiryDate = table.Column<DateOnly>(type: "date", nullable: true),
                     UploadedByUserId = table.Column<int>(type: "int", nullable: false),
                     UploadedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
@@ -198,6 +202,15 @@ namespace RegulatoryComplianceApplication.Infrastructure.Migrations
                         principalTable: "Users",
                         principalColumn: "UserId",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.InsertData(
+                table: "Roles",
+                columns: new[] { "RoleId", "RoleName" },
+                values: new object[,]
+                {
+                    { 1, "Administrator" },
+                    { 2, "Management" }
                 });
 
             migrationBuilder.CreateIndex(

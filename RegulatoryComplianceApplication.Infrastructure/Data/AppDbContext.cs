@@ -15,6 +15,7 @@ namespace RegulatoryComplianceApplication.Infrastructure.Data
         public DbSet<DocumentResponsibleUser> DocumentResponsibleUsers => Set<DocumentResponsibleUser>();
         public DbSet<Notification> Notifications => Set<Notification>();
         public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+        public DbSet<Bill> Bills => Set<Bill>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -73,6 +74,15 @@ namespace RegulatoryComplianceApplication.Infrastructure.Data
                 new Role { RoleId = 1, RoleName = "Administrator" },
                 new Role { RoleId = 2, RoleName = "Management" }
             );
+            modelBuilder.Entity<Bill>()
+                .HasOne(b => b.User)
+                .WithMany(u => u.Bills)
+                .HasForeignKey(b => b.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Bill>()
+                .Property(b => b.Amount)
+                .HasPrecision(18, 2);
         }
     }
 }

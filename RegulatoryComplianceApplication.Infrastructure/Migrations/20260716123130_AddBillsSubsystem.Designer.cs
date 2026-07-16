@@ -12,8 +12,8 @@ using RegulatoryComplianceApplication.Infrastructure.Data;
 namespace RegulatoryComplianceApplication.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260702124633_SeedRoles")]
-    partial class SeedRoles
+    [Migration("20260716123130_AddBillsSubsystem")]
+    partial class AddBillsSubsystem
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -64,6 +64,53 @@ namespace RegulatoryComplianceApplication.Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("AuditLogs");
+                });
+
+            modelBuilder.Entity("RegulatoryComplianceApplication.Core.Entities.Bill", b =>
+                {
+                    b.Property<int>("BillId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BillId"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("AttachmentPath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BillName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateOnly>("DueDate")
+                        .HasColumnType("date");
+
+                    b.Property<int>("Frequency")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsRecurring")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("BillId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Bills");
                 });
 
             modelBuilder.Entity("RegulatoryComplianceApplication.Core.Entities.Document", b =>
@@ -137,6 +184,12 @@ namespace RegulatoryComplianceApplication.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DocumentTypeId"));
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsExpirable")
+                        .HasColumnType("bit");
+
                     b.Property<string>("TypeName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -157,7 +210,7 @@ namespace RegulatoryComplianceApplication.Infrastructure.Migrations
                     b.Property<int>("DocumentId")
                         .HasColumnType("int");
 
-                    b.Property<DateOnly>("ExpiryDate")
+                    b.Property<DateOnly?>("ExpiryDate")
                         .HasColumnType("date");
 
                     b.Property<string>("FilePath")
@@ -301,6 +354,17 @@ namespace RegulatoryComplianceApplication.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("RegulatoryComplianceApplication.Core.Entities.Bill", b =>
+                {
+                    b.HasOne("RegulatoryComplianceApplication.Core.Entities.User", "User")
+                        .WithMany("Bills")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("RegulatoryComplianceApplication.Core.Entities.Document", b =>
                 {
                     b.HasOne("RegulatoryComplianceApplication.Core.Entities.DocumentVersion", "CurrentVersion")
@@ -309,7 +373,7 @@ namespace RegulatoryComplianceApplication.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("RegulatoryComplianceApplication.Core.Entities.DocumentType", "DocumentType")
-                        .WithMany()
+                        .WithMany("Documents")
                         .HasForeignKey("DocumentTypeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -402,9 +466,19 @@ namespace RegulatoryComplianceApplication.Infrastructure.Migrations
                     b.Navigation("Versions");
                 });
 
+            modelBuilder.Entity("RegulatoryComplianceApplication.Core.Entities.DocumentType", b =>
+                {
+                    b.Navigation("Documents");
+                });
+
             modelBuilder.Entity("RegulatoryComplianceApplication.Core.Entities.Role", b =>
                 {
                     b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("RegulatoryComplianceApplication.Core.Entities.User", b =>
+                {
+                    b.Navigation("Bills");
                 });
 #pragma warning restore 612, 618
         }
