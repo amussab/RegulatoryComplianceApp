@@ -87,6 +87,41 @@
 
 </div>
 
+@if (User.IsInRole("Administrator"))
+{
+    <div class="card mt-4">
+
+        <div class="card-header bg-white">
+
+            <h5 class="mb-0">
+                <i class="bi bi-file-earmark-text me-2"></i>
+                Reports
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <p class="text-muted mb-3">
+                Generate management reports for documents and bills.
+            </p>
+
+            <a asp-action="ExportDocumentsPdf"
+               asp-controller="Documents"
+               class="btn btn-outline-danger me-2">
+
+                <i class="bi bi-file-earmark-pdf me-1"></i>
+                Documents PDF
+
+            </a>
+
+            <!-- We'll add Excel here -->
+
+        </div>
+
+    </div>
+}
+
 <div class="row mt-5 g-4">
 
     <div class="col-lg-6">

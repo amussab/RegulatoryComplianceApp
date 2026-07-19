@@ -7,6 +7,7 @@ using RegulatoryComplianceApplication.Infrastructure.Confirguration;
 using RegulatoryComplianceApplication.Infrastructure.Data;
 using RegulatoryComplianceApplication.Infrastructure.Services;
 using RegulatoryComplianceApplication.Jobs;
+using RegulatoryComplianceApplication.Infrastructure.Services.AI;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +22,8 @@ builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IBillService, BillService>();
+builder.Services.AddScoped<IAIService, OpenAIService>();
+builder.Services.AddScoped<IReportService, ReportService>();
 
 // Hangfire Job
 builder.Services.AddScoped<NotificationJob>();
@@ -58,8 +61,14 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     {
         options.LoginPath = "/Account/Login";
         options.AccessDeniedPath = "/Account/AccessDenied";
-    });
 
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SameSite = SameSiteMode.Strict;
+
+        options.SlidingExpiration = true;
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+    });
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

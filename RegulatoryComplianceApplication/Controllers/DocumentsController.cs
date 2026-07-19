@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using RegulatoryComplianceApplication.Core.Entities;
 using RegulatoryComplianceApplication.Core.Interfaces;
+using RegulatoryComplianceApplication.Core.Models;
+using RegulatoryComplianceApplication.Infrastructure.Data;
 using RegulatoryComplianceApplication.Web.ViewModels;
 using System.Security.Claims;
 
@@ -16,11 +18,17 @@ namespace RegulatoryComplianceApplication.Web.Controllers
         private readonly IDocumentService _documentService;
         private readonly IFileStorageService _fileStorageService;
         private readonly RegulatoryComplianceApplication.Infrastructure.Data.AppDbContext _context;
-        public DocumentsController(IDocumentService documentService, IFileStorageService fileStorageService, RegulatoryComplianceApplication.Infrastructure.Data.AppDbContext context)
+        private readonly IReportService _reportService;
+        public DocumentsController(
+    IDocumentService documentService,
+    IFileStorageService fileStorageService,
+    AppDbContext context,
+    IReportService reportService)
         {
             _documentService = documentService;
             _fileStorageService = fileStorageService;
             _context = context;
+            _reportService = reportService;
         }
 
         public async Task<IActionResult> Index()
@@ -479,6 +487,67 @@ namespace RegulatoryComplianceApplication.Web.Controllers
             }
 
             return View(vm);
+        }
+        [Authorize]
+        public async Task<IActionResult> ExportDocumentsPdf()
+        {
+            var documents = await _documentService.GetAllAsync();
+
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var cutoff = today.AddDays(60);
+
+            var reportData = documents.Select(d =>
+            {
+                var expiry = d.CurrentVersion?.ExpiryDate;
+
+                string status;
+
+                if (!d.DocumentType.IsExpirable)
+                {
+                    status = "No Expiry";
+                }
+                else if (expiry == null)
+                {
+                    status = "Unknown";
+                }
+                else if (expiry < today)
+                {
+                    status = "Expired";
+                }
+                else if (expiry <= cutoff)
+                {
+                    status = "Expiring Soon";
+                }
+                else
+                {
+                    status = "Valid";
+                }
+
+                return new DocumentReportRow
+                {
+                    Title = d.Title,
+                    DocumentNumber = d.DocumentNumber,
+                    ResponsibleUser = d.ResponsibleUsers
+                        .Select(r => r.User.FullName)
+                        .FirstOrDefault() ?? "Unassigned",
+                    ExpiryDate = expiry,
+                    Status = status
+                };
+            }).ToList();
+            int validCount = reportData.Count(d => d.Status == "Valid");
+            int expiringSoonCount = reportData.Count(d => d.Status == "Expiring Soon");
+            int expiredCount = reportData.Count(d => d.Status == "Expired");
+
+            var pdf = await _reportService.GenerateDocumentsPdfAsync(
+                reportData,
+                validCount,
+                expiringSoonCount,
+                expiredCount);
+
+            return File(
+                pdf,
+                "application/pdf",
+                $"DocumentsReport_{DateTime.Now:yyyyMMdd}.pdf");
         }
         private async Task<bool> CanManageDocument(int documentId)
         {

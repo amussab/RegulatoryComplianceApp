@@ -1,0 +1,32 @@
+﻿@model RegulatoryComplianceApplication.ViewModels.Assistant.ChatViewModel
+
+@{
+    ViewData["Title"] = "AI Compliance Assistant";
+}
+
+<h2>AI Compliance Assistant</h2>
+
+<form asp-action="Index" method="post">
+
+    <div class="mb-3">
+        <label asp-for="Question" class="form-label"></label>
+        <textarea asp-for="Question" class="form-control" rows="4"></textarea>
+        <span asp-validation-for="Question" class="text-danger"></span>
+    </div>
+
+    <button class="btn btn-primary" type="submit">
+        Ask
+    </button>
+
+</form>
+
+@if (!string.IsNullOrWhiteSpace(Model.Response))
+{
+    <hr />
+
+    <div class="alert alert-light">
+        <strong>Assistant:</strong>
+        <br />
+        @Model.Response
+    </div>
+}
