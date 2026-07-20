@@ -108,14 +108,39 @@
 
             <a asp-action="ExportDocumentsPdf"
                asp-controller="Documents"
-               class="btn btn-outline-danger me-2">
+               class="btn btn-outline-danger me-2 mb-2">
 
                 <i class="bi bi-file-earmark-pdf me-1"></i>
                 Documents PDF
 
             </a>
 
-            <!-- We'll add Excel here -->
+            <a asp-action="ExportDocumentsExcel"
+               asp-controller="Documents"
+               class="btn btn-outline-success me-2 mb-2">
+
+                <i class="bi bi-file-earmark-excel me-1"></i>
+                Documents Excel
+
+            </a>
+
+            <a asp-action="ExportBillsPdf"
+               asp-controller="Bills"
+               class="btn btn-outline-danger me-2 mb-2">
+
+                <i class="bi bi-file-earmark-pdf me-1"></i>
+                Bills PDF
+
+            </a>
+
+            <a asp-action="ExportBillsExcel"
+               asp-controller="Bills"
+               class="btn btn-outline-success mb-2">
+
+                <i class="bi bi-file-earmark-excel me-1"></i>
+                Bills Excel
+
+            </a>
 
         </div>
 

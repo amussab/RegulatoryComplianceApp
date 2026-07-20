@@ -489,6 +489,63 @@ namespace RegulatoryComplianceApplication.Web.Controllers
             return View(vm);
         }
         [Authorize]
+        public async Task<IActionResult> ExportDocumentsExcel()
+        {
+            var documents = await _documentService.GetAllAsync();
+
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var cutoff = today.AddDays(60);
+
+            var reportData = documents.Select(d =>
+            {
+                var expiry = d.CurrentVersion?.ExpiryDate;
+
+                string status;
+
+                if (!d.DocumentType.IsExpirable)
+                {
+                    status = "No Expiry";
+                }
+                else if (expiry == null)
+                {
+                    status = "Unknown";
+                }
+                else if (expiry < today)
+                {
+                    status = "Expired";
+                }
+                else if (expiry <= cutoff)
+                {
+                    status = "Expiring Soon";
+                }
+                else
+                {
+                    status = "Valid";
+                }
+
+                return new DocumentReportRow
+                {
+                    Title = d.Title,
+                    DocumentNumber = d.DocumentNumber,
+                    ResponsibleUser = d.ResponsibleUsers
+                        .Select(r => r.User.FullName)
+                        .FirstOrDefault() ?? "Unassigned",
+                    ExpiryDate = expiry,
+                    Status = status
+                };
+            }).ToList();
+            int validCount = reportData.Count(d => d.Status == "Valid");
+            int expiringSoonCount = reportData.Count(d => d.Status == "Expiring Soon");
+            int expiredCount = reportData.Count(d => d.Status == "Expired");
+
+            var excel = await _reportService.GenerateDocumentsExcelAsync(
+    reportData);
+
+            return File(
+    excel,
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    $"DocumentsReport_{DateTime.Now:yyyyMMdd}.xlsx");
+        }
         public async Task<IActionResult> ExportDocumentsPdf()
         {
             var documents = await _documentService.GetAllAsync();

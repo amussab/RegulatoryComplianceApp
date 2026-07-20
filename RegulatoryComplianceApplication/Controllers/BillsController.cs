@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using RegulatoryComplianceApplication.Core.Entities;
 using RegulatoryComplianceApplication.Core.Interfaces;
+using RegulatoryComplianceApplication.Core.Models;
 using RegulatoryComplianceApplication.Infrastructure.Data;
 using RegulatoryComplianceApplication.Web.ViewModels;
 
@@ -15,15 +16,17 @@ namespace RegulatoryComplianceApplication.Web.Controllers
         private readonly IBillService _billService;
         private readonly AppDbContext _context;
         private readonly IFileStorageService _fileStorageService;
-
+        private readonly IReportService _reportService;
         public BillsController(
             IBillService billService,
             AppDbContext context,
-            IFileStorageService fileStorageService)
+            IFileStorageService fileStorageService,
+            IReportService reportService)
         {
             _billService = billService;
             _context = context;
             _fileStorageService = fileStorageService;
+            _reportService = reportService;
         }
 
         public async Task<IActionResult> Index()
@@ -197,6 +200,36 @@ namespace RegulatoryComplianceApplication.Web.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+        [Authorize]
+        public async Task<IActionResult> ExportBillsPdf()
+        {
+            var bills = await _billService.GetAllAsync();
+
+            var reportData = bills.Select(b => new BillReportRow
+            {
+                BillName = b.BillName,
+                Amount = b.Amount,
+                AssignedUser = b.User.FullName,
+                DueDate = b.DueDate,
+                Frequency = b.Frequency.ToString(),
+                Status = b.Status.ToString()
+            }).ToList();
+
+            int paidCount = reportData.Count(b => b.Status == "Paid");
+            int pendingCount = reportData.Count(b => b.Status == "Pending");
+            int overdueCount = reportData.Count(b => b.Status == "Overdue");
+
+            var pdf = await _reportService.GenerateBillsPdfAsync(
+                reportData,
+                paidCount,
+                pendingCount,
+                overdueCount);
+
+            return File(
+                pdf,
+                "application/pdf",
+                $"BillsReport_{DateTime.Now:yyyyMMdd}.pdf");
+        }
         public async Task<IActionResult> Details(int id)
         {
             var bill = await _billService.GetByIdAsync(id);
@@ -205,6 +238,28 @@ namespace RegulatoryComplianceApplication.Web.Controllers
                 return NotFound();
 
             return View(bill);
+        }
+        [Authorize]
+        public async Task<IActionResult> ExportBillsExcel()
+        {
+            var bills = await _billService.GetAllAsync();
+
+            var reportData = bills.Select(b => new BillReportRow
+            {
+                BillName = b.BillName,
+                Amount = b.Amount,
+                AssignedUser = b.User.FullName,
+                DueDate = b.DueDate,
+                Frequency = b.Frequency.ToString(),
+                Status = b.Status.ToString()
+            }).ToList();
+
+            var excel = await _reportService.GenerateBillsExcelAsync(reportData);
+
+            return File(
+                excel,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                $"BillsReport_{DateTime.Now:yyyyMMdd}.xlsx");
         }
     }
 }
