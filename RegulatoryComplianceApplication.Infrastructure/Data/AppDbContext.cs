@@ -64,6 +64,18 @@ namespace RegulatoryComplianceApplication.Infrastructure.Data
                 .HasForeignKey(n => n.RecipientUserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<Notification>()
+                .HasOne(n => n.Document)
+                .WithMany()
+                .HasForeignKey(n => n.DocumentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Notification>()
+                .HasOne(n => n.Bill)
+                .WithMany()
+                .HasForeignKey(n => n.BillId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             modelBuilder.Entity<User>()
                 .HasOne(u => u.Role)
                 .WithMany(r => r.Users)

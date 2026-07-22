@@ -5,6 +5,7 @@ namespace RegulatoryComplianceApplication.Core.Interfaces
     public interface INotificationService
     {
         Task CreateExpiryNotificationsAsync(Document document);
+        Task CreateBillNotificationsAsync(Bill bill);
 
         Task<List<Notification>> GetUnreadNotificationsAsync(int userId);
 

@@ -70,7 +70,8 @@
                                 </td>
 
                                 <td>
-                                    <td>
+                                    @if (notification.DocumentId.HasValue)
+                                    {
                                         <a asp-controller="Documents"
                                            asp-action="Details"
                                            asp-route-id="@notification.DocumentId"
@@ -79,7 +80,22 @@
                                             @notification.Message
 
                                         </a>
-                                    </td>
+                                    }
+                                    else if (notification.BillId.HasValue)
+                                    {
+                                        <a asp-controller="Bills"
+                                           asp-action="Details"
+                                           asp-route-id="@notification.BillId"
+                                           class="text-decoration-none">
+
+                                            @notification.Message
+
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        @notification.Message
+                                    }
                                 </td>
 
                                 <td>

@@ -89,22 +89,80 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services
                 var recipient = emailRecipients.First(u =>
                     u.UserId == notification.RecipientUserId);
 
-                try
-                {
-                    await _emailService.SendEmailAsync(
-                        recipient.Email,
-                        EmailSubject,
-                        message);
+                //try
+                //{
+                //    await _emailService.SendEmailAsync(
+                //        recipient.Email,
+                //        EmailSubject,
+                //        message);
 
-                    notification.SentAt = DateTime.UtcNow;
-                }
-                catch
-                {
-                    // Email delivery is best-effort only.
-                }
+                //    notification.SentAt = DateTime.UtcNow;
+                //}
+                //catch
+                //{
+                //    // Email delivery is best-effort only.
+                //}
             }
 
             await _context.SaveChangesAsync();
+        }
+
+        public async Task CreateBillNotificationsAsync(Bill bill)
+        {
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            if (bill == null)
+                throw new ArgumentNullException(nameof(bill));
+
+            var loadedBill = await _context.Bills
+                .Include(b => b.User)
+                .FirstOrDefaultAsync(b =>
+                    b.BillId == bill.BillId &&
+                    !b.IsDeleted);
+
+            if (loadedBill == null)
+                return;
+
+            var existingNotification = await _context.Notifications.AnyAsync(n =>
+                n.BillId == loadedBill.BillId &&
+                n.RecipientUserId == loadedBill.UserId &&
+                !n.IsRead);
+
+            if (existingNotification)
+                return;
+
+            var message = BuildBillNotificationMessage(loadedBill);
+
+            var notification = new Notification
+            {
+                BillId = loadedBill.BillId,
+                RecipientUserId = loadedBill.UserId,
+                Channel = NotificationChannel,
+                Message = message,
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Notifications.Add(notification);
+
+            await _context.SaveChangesAsync();
+
+
+            try
+            {
+                //await _emailService.SendEmailAsync(
+                //    loadedBill.User.Email,
+                //    "Bill Reminder",
+                //    message);
+
+                notification.SentAt = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync();
+            }
+            catch
+            {
+                // Email delivery is best-effort only.
+            }
+
         }
 
         public async Task<List<Notification>> GetUnreadNotificationsAsync(int userId)
@@ -218,6 +276,32 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services
                 $"{document.DocumentType.TypeName}{Environment.NewLine}{Environment.NewLine}" +
                 $"Document Number: {document.DocumentNumber}{Environment.NewLine}{Environment.NewLine}" +
                 $"This document expires on {expiryDate:dd MMMM yyyy}.";
+        }
+        private static string BuildBillNotificationMessage(Bill bill)
+        {
+            var today = DateOnly.FromDateTime(DateTime.Today);
+
+            string intro;
+
+            if (bill.DueDate < today)
+            {
+                intro = "This bill is overdue.";
+            }
+            else if (bill.DueDate == today)
+            {
+                intro = "This bill is due today.";
+            }
+            else
+            {
+                intro = $"This bill is due on {bill.DueDate:dd MMMM yyyy}.";
+            }
+
+            return
+                $"{bill.BillName}{Environment.NewLine}{Environment.NewLine}" +
+                $"Amount: {bill.Amount:C}{Environment.NewLine}" +
+                $"Frequency: {bill.Frequency}{Environment.NewLine}" +
+                $"Status: {bill.Status}{Environment.NewLine}{Environment.NewLine}" +
+                intro;
         }
     }
 }

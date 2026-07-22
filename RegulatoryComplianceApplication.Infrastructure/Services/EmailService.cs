@@ -19,9 +19,6 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services
 
         public async Task SendEmailAsync(string recipientEmail, string subject, string body)
         {
-            Console.WriteLine($"SMTP Server: {_settings.SmtpServer}");
-            Console.WriteLine($"Port: {_settings.Port}");
-            Console.WriteLine($"Username: {_settings.Username}");
 
             var email = new MimeMessage();
 

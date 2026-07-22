@@ -22,6 +22,35 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services
                 .OrderBy(b => b.DueDate)
                 .ToListAsync();
         }
+        public async Task<IEnumerable<Bill>> GetDueSoonAsync(int days)
+        {
+            var today = DateOnly.FromDateTime(DateTime.Today);
+            var cutoff = today.AddDays(days);
+
+            return await _context.Bills
+                .Include(b => b.User)
+                .Where(b =>
+                    !b.IsDeleted &&
+                    b.Status != BillStatus.Paid &&
+                    b.DueDate >= today &&
+                    b.DueDate <= cutoff)
+                .OrderBy(b => b.DueDate)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Bill>> GetOverdueAsync()
+        {
+            var today = DateOnly.FromDateTime(DateTime.Today);
+
+            return await _context.Bills
+                .Include(b => b.User)
+                .Where(b =>
+                    !b.IsDeleted &&
+                    b.Status != BillStatus.Paid &&
+                    b.DueDate < today)
+                .OrderBy(b => b.DueDate)
+                .ToListAsync();
+        }
 
         public async Task<Bill?> GetByIdAsync(int billId)
         {

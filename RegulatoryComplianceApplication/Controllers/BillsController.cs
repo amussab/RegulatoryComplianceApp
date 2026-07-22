@@ -29,9 +29,71 @@ namespace RegulatoryComplianceApplication.Web.Controllers
             _reportService = reportService;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(
+            string? search,
+            BillStatus? status,
+            BillFrequency? frequency,
+            int? userId,
+            string? dueFilter)
         {
-            return View(await _billService.GetAllAsync());
+            var bills = await _billService.GetAllAsync();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                bills = bills.Where(b =>
+                    b.BillName.Contains(search, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (status.HasValue)
+            {
+                bills = bills.Where(b => b.Status == status.Value);
+            }
+            if (frequency.HasValue)
+            {
+                bills = bills.Where(b => b.Frequency == frequency.Value);
+            }
+
+            if (userId.HasValue)
+            {
+                bills = bills.Where(b => b.UserId == userId.Value);
+            }
+            var today = DateOnly.FromDateTime(DateTime.Today);
+
+            switch (dueFilter)
+            {
+                case "Today":
+                    bills = bills.Where(b => b.DueDate == today);
+                    break;
+
+                case "Next7":
+                    bills = bills.Where(b =>
+                        b.DueDate >= today &&
+                        b.DueDate <= today.AddDays(7));
+                    break;
+
+                case "Next30":
+                    bills = bills.Where(b =>
+                        b.DueDate >= today &&
+                        b.DueDate <= today.AddDays(30));
+                    break;
+
+                case "Overdue":
+                    bills = bills.Where(b => b.DueDate < today);
+                    break;
+            }
+
+            ViewBag.Search = search;
+            ViewBag.Status = status;
+            ViewBag.Frequency = frequency;
+            ViewBag.UserId = userId;
+            ViewBag.DueFilter = dueFilter;
+
+            ViewBag.Users = await _context.Users
+                .Where(u => u.IsActive)
+                .OrderBy(u => u.FullName)
+                .ToListAsync();
+
+            return View(bills);
         }
 
         [Authorize(Roles = "Administrator")]
