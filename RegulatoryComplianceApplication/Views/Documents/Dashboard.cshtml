@@ -85,6 +85,113 @@
 
     </div>
 
+    <div class="mt-5 mb-3">
+
+        <h4 class="fw-bold">
+
+            <i class="bi bi-cash-stack me-2"></i>
+            Financial Overview
+
+        </h4>
+
+        <p class="text-muted mb-0">
+            Current bill payment status.
+        </p>
+
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-lg-3">
+
+            <div class="card h-100">
+
+                <div class="card-body text-center py-4">
+
+                    <i class="bi bi-check-circle-fill text-success display-6"></i>
+
+                    <h5 class="mt-3">
+                        Paid Bills
+                    </h5>
+
+                    <h2 class="fw-bold text-success">
+                        @Model.PaidBills
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-3">
+
+            <div class="card h-100">
+
+                <div class="card-body text-center py-4">
+
+                    <i class="bi bi-hourglass-split text-warning display-6"></i>
+
+                    <h5 class="mt-3">
+                        Pending Bills
+                    </h5>
+
+                    <h2 class="fw-bold text-warning">
+                        @Model.PendingBills
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-3">
+
+            <div class="card h-100">
+
+                <div class="card-body text-center py-4">
+
+                    <i class="bi bi-exclamation-circle-fill text-danger display-6"></i>
+
+                    <h5 class="mt-3">
+                        Overdue Bills
+                    </h5>
+
+                    <h2 class="fw-bold text-danger">
+                        @Model.OverdueBills
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-3">
+
+            <div class="card h-100">
+
+                <div class="card-body text-center py-4">
+
+                    <i class="bi bi-currency-dollar text-primary display-6"></i>
+
+                    <h5 class="mt-3">
+                        Outstanding
+                    </h5>
+
+                    <h2 class="fw-bold text-primary">
+                        @Model.OutstandingAmount.ToString("N2") SAR
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </div>
 
 @if (User.IsInRole("Administrator"))
@@ -157,7 +264,7 @@
 
                 <h5 class="mb-0">
                     <i class="bi bi-pie-chart-fill me-2"></i>
-                    Status Distribution
+                    Documents Status Distribution
                 </h5>
 
             </div>
@@ -165,7 +272,7 @@
             <div class="card-body d-flex justify-content-center align-items-center">
 
                 <div id="statusDonutChart"
-                     style="width:100%; max-width:340px;">
+                     style="width:100%; max-width:450px;">
                 </div>
 
             </div>
@@ -182,7 +289,7 @@
 
                 <h5 class="mb-0">
                     <i class="bi bi-bar-chart-fill me-2"></i>
-                    Status Comparison
+                    Documents Status Comparison
                 </h5>
 
             </div>
@@ -190,8 +297,193 @@
             <div class="card-body d-flex justify-content-center align-items-center">
 
                 <div id="statusBarChart"
-                     style="width:100%; max-width:500px;">
+                     style="width:100%; max-width:450px;">
                 </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+    <div class="row mt-4 g-4">
+
+        <div class="col-lg-6">
+
+            <div class="card h-100">
+
+                <div class="card-header bg-white">
+
+                    <h5 class="mb-0">
+
+                        <i class="bi bi-cash-stack me-2"></i>
+
+                        Bills Status Distribution
+
+                    </h5>
+
+                </div>
+
+                <div class="card-body d-flex justify-content-center align-items-center">
+
+                    <div id="billDonutChart"
+                         style="width:100%; max-width:450px;">
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-6">
+
+            <div class="card h-100">
+
+                <div class="card-header bg-white">
+
+                    <h5 class="mb-0">
+
+                        <i class="bi bi-bar-chart-fill me-2"></i>
+
+                        Bills Status Comparison
+
+                    </h5>
+
+                </div>
+
+                <div class="card-body d-flex justify-content-center align-items-center">
+
+                    <div id="billBarChart"
+                         style="width:100%; max-width:450px;">
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+<div class="card mt-4">
+
+    <div class="card-header bg-white">
+
+        <h5 class="mb-0">
+            <i class="bi bi-cpu-fill me-2"></i>
+            Compliance Analytics Engine 
+        </h5>
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="row">
+
+            <div class="col-md-3 text-center">
+
+                <h6 class="text-muted">
+                    Overall Score
+                </h6>
+
+                <h1 class="display-5 fw-bold text-primary">
+                    @Model.Analytics.OverallScore%
+                </h1>
+
+            </div>
+
+            <div class="col-md-3 text-center">
+
+                <h6 class="text-muted">
+                    Grade
+                </h6>
+
+                <h1 class="display-5 fw-bold text-success">
+                    @Model.Analytics.Grade
+                </h1>
+
+            </div>
+
+            <div class="col-md-3 text-center">
+
+                <h6 class="text-muted">
+                    Risk
+                </h6>
+
+                @if (Model.Analytics.RiskLevel == "Low")
+                {
+                    <h2 class="text-success fw-bold">
+                        LOW
+                    </h2>
+                }
+                else if (Model.Analytics.RiskLevel == "Medium")
+                {
+                    <h2 class="text-warning fw-bold">
+                        MEDIUM
+                    </h2>
+                }
+                else
+                {
+                    <h2 class="text-danger fw-bold">
+                        HIGH
+                    </h2>
+                }
+
+            </div>
+
+            <div class="col-md-3 text-center">
+
+                <h6 class="text-muted">
+                    Financial Health
+                </h6>
+
+                <h2 class="fw-bold text-primary">
+                    @Model.Analytics.FinancialHealth%
+                </h2>
+
+            </div>
+
+        </div>
+
+        <hr />
+
+        <div class="row">
+
+            <div class="col-md-6">
+
+                <h6 class="fw-bold">
+                    Compliance Health
+                </h6>
+
+                <div class="progress"
+                     style="height:28px;">
+
+                    <div class="progress-bar bg-success"
+                         role="progressbar"
+                         style="width:@Model.Analytics.ComplianceHealth%">
+
+                        @Model.Analytics.ComplianceHealth%
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-6">
+
+                <h6 class="fw-bold">
+                    Recommendations
+                </h6>
+
+                <ul class="mb-0">
+
+                    @foreach (var recommendation in Model.Analytics.Recommendations)
+                    {
+                        <li>@recommendation</li>
+                    }
+
+                </ul>
 
             </div>
 
@@ -200,6 +492,7 @@
     </div>
 
 </div>
+
 
 @section Scripts
 {
@@ -210,7 +503,9 @@
         const validCount = @Model.ValidCount;
         const expiringSoonCount = @Model.ExpiringSoonCount;
         const expiredCount = @Model.ExpiredCount;
-
+        const paidBills = @Model.PaidBills;
+        const pendingBills = @Model.PendingBills;
+        const overdueBills = @Model.OverdueBills;
         // ===========================
         // Doughnut Chart
         // ===========================
@@ -386,6 +681,180 @@
         new ApexCharts(
         document.querySelector("#statusBarChart"),
         barOptions
+        ).render();
+
+        // ===========================
+        // Bills Doughnut Chart
+        // ===========================
+
+        var billOptions = {
+
+        chart: {
+        type: 'donut',
+        height: 280,
+        toolbar: {
+        show: false
+        }
+        },
+
+        series: [
+
+        paidBills,
+
+        pendingBills,
+
+        overdueBills
+
+        ],
+
+        labels: [
+
+        'Paid',
+
+        'Pending',
+
+        'Overdue'
+
+        ],
+
+        colors: [
+
+        '#198754',
+
+        '#FFC107',
+
+        '#DC3545'
+
+        ],
+
+        legend: {
+
+        position: 'bottom'
+
+        },
+
+        stroke: {
+
+        width: 0
+
+        },
+
+        dataLabels: {
+
+        enabled: true
+
+        }
+
+        };
+
+        new ApexCharts(
+        document.querySelector("#billDonutChart"),
+        billOptions
+        ).render();
+
+        // ===========================
+        // Bills Bar Chart
+        // ===========================
+
+        var billBarOptions = {
+
+        chart: {
+
+        type: 'bar',
+
+        height: 280,
+
+        toolbar: {
+
+        show: false
+
+        }
+
+        },
+
+        series: [
+
+        {
+
+        name: 'Bills',
+
+        data: [
+
+        paidBills,
+
+        pendingBills,
+
+        overdueBills
+
+        ]
+
+        }
+
+        ],
+
+        xaxis: {
+
+        categories: [
+
+        'Paid',
+
+        'Pending',
+
+        'Overdue'
+
+        ]
+
+        },
+
+        colors: [
+
+        '#005EB8'
+
+        ],
+
+        plotOptions: {
+
+        bar: {
+
+        borderRadius: 6,
+
+        columnWidth: '45%'
+
+        }
+
+        },
+
+        grid: {
+
+        borderColor: '#ECECEC'
+
+        },
+
+        dataLabels: {
+
+        enabled: false
+
+        },
+
+        legend: {
+
+        show: false
+
+        },
+
+        yaxis: {
+
+        min: 0,
+
+        forceNiceScale: true
+
+        }
+
+        };
+
+        new ApexCharts(
+        document.querySelector("#billBarChart"),
+        billBarOptions
         ).render();
 
     </script>

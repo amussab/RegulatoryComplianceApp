@@ -24,6 +24,7 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IBillService, BillService>();
 builder.Services.AddScoped<IAIService, OpenAIService>();
 builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
 
 // Hangfire Job
 builder.Services.AddScoped<NotificationJob>();

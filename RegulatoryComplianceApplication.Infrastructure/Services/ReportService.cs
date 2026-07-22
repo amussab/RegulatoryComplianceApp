@@ -331,7 +331,7 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services
                                     .Text(bill.BillName);
 
                                 table.Cell().PaddingVertical(4)
-                                    .Text($"{bill.Amount:C}");
+                                    .Text($"{bill.Amount:N2} SAR");
 
                                 table.Cell().PaddingVertical(4)
                                     .Text(bill.AssignedUser);
@@ -405,7 +405,7 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services
             {
                 worksheet.Cell(row, 1).Value = bill.BillName;
                 worksheet.Cell(row, 2).Value = bill.Amount;
-                worksheet.Cell(row, 2).Style.NumberFormat.Format = "#,##0.00";
+                worksheet.Cell(row, 2).Style.NumberFormat.Format = "#,##0.00 \"SAR\"";
 
                 worksheet.Cell(row, 3).Value = bill.AssignedUser;
                 worksheet.Cell(row, 4).Value = bill.DueDate.ToString("dd MMM yyyy");

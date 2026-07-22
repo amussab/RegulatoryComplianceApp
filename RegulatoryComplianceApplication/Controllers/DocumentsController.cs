@@ -19,19 +19,26 @@ namespace RegulatoryComplianceApplication.Web.Controllers
         private readonly IFileStorageService _fileStorageService;
         private readonly RegulatoryComplianceApplication.Infrastructure.Data.AppDbContext _context;
         private readonly IReportService _reportService;
+        private readonly IAnalyticsService _analyticsService;
         public DocumentsController(
-    IDocumentService documentService,
-    IFileStorageService fileStorageService,
-    AppDbContext context,
-    IReportService reportService)
+            IDocumentService documentService,
+            IFileStorageService fileStorageService,
+            AppDbContext context,
+            IReportService reportService,
+            IAnalyticsService analyticsService)
         {
             _documentService = documentService;
             _fileStorageService = fileStorageService;
             _context = context;
             _reportService = reportService;
+            _analyticsService = analyticsService;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(
+            string? search,
+            string? status,
+            int? documentTypeId,
+            int? userId)
         {
             var documents = await _documentService.GetAllAsync();
 
@@ -43,27 +50,27 @@ namespace RegulatoryComplianceApplication.Web.Controllers
                 {
                     var expiry = d.CurrentVersion?.ExpiryDate;
 
-                    string status;
+                    string documentStatus;
 
                     if (!d.DocumentType.IsExpirable)
                     {
-                        status = "No Expiry";
+                        documentStatus = "No Expiry";
                     }
                     else if (expiry == null)
                     {
-                        status = "Unknown";
+                        documentStatus = "Unknown";
                     }
                     else if (expiry < today)
                     {
-                        status = "Expired";
+                        documentStatus = "Expired";
                     }
                     else if (expiry <= cutoff)
                     {
-                        status = "Expiring Soon";
+                        documentStatus = "Expiring Soon";
                     }
                     else
                     {
-                        status = "Valid";
+                        documentStatus = "Valid";
                     }
 
                     return new DocumentListViewModel
@@ -72,13 +79,65 @@ namespace RegulatoryComplianceApplication.Web.Controllers
                         Title = d.Title,
                         DocumentNumber = d.DocumentNumber,
                         ExpiryDate = expiry,
-                        Status = status,
+                        Status = documentStatus,
+                        DocumentTypeName = d.DocumentType.TypeName,
                         ResponsibleUser = d.ResponsibleUsers
                             .Select(r => r.User.FullName)
                             .FirstOrDefault() ?? "Unassigned",
+
+                        // Temporary values used only for filtering
+                        DocumentTypeId = d.DocumentTypeId,
+                        ResponsibleUserId = d.ResponsibleUsers
+                            .Select(r => r.UserId)
+                            .FirstOrDefault()
                     };
                 })
                 .ToList();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                viewModels = viewModels
+                    .Where(d =>
+                        d.Title.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                        d.DocumentNumber.Contains(search, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                viewModels = viewModels
+                    .Where(d => d.Status == status)
+                    .ToList();
+            }
+
+            if (documentTypeId.HasValue)
+            {
+                viewModels = viewModels
+                    .Where(d => d.DocumentTypeId == documentTypeId)
+                    .ToList();
+            }
+
+            if (userId.HasValue)
+            {
+                viewModels = viewModels
+                    .Where(d => d.ResponsibleUserId == userId)
+                    .ToList();
+            }
+
+            ViewBag.Search = search;
+            ViewBag.Status = status;
+            ViewBag.DocumentTypeId = documentTypeId;
+            ViewBag.UserId = userId;
+
+            ViewBag.DocumentTypes = await _context.DocumentTypes
+                .Where(t => !t.IsDeleted)
+                .OrderBy(t => t.TypeName)
+                .ToListAsync();
+
+            ViewBag.Users = await _context.Users
+                .Where(u => u.IsActive)
+                .OrderBy(u => u.FullName)
+                .ToListAsync();
 
             return View(viewModels);
         }
@@ -473,18 +532,53 @@ namespace RegulatoryComplianceApplication.Web.Controllers
         public async Task<IActionResult> Dashboard()
         {
             var documents = await _documentService.GetAllAsync();
+            var bills = await _context.Bills
+                .Where(b => !b.IsDeleted)
+                .ToListAsync();
+
             var today = DateOnly.FromDateTime(DateTime.UtcNow);
             var cutoff = today.AddDays(60);
 
             var vm = new DashboardViewModel();
+
+            // ===========================
+            // Documents
+            // ===========================
+
             foreach (var d in documents.Where(d => d.DocumentType.IsExpirable))
             {
                 var expiry = d.CurrentVersion?.ExpiryDate;
-                if (expiry == null) continue;
-                if (expiry < today) vm.ExpiredCount++;
-                else if (expiry <= cutoff) vm.ExpiringSoonCount++;
-                else vm.ValidCount++;
+
+                if (expiry == null)
+                    continue;
+
+                if (expiry < today)
+                    vm.ExpiredCount++;
+
+                else if (expiry <= cutoff)
+                    vm.ExpiringSoonCount++;
+
+                else
+                    vm.ValidCount++;
             }
+
+            // ===========================
+            // Bills
+            // ===========================
+
+            vm.PaidBills = bills.Count(b => b.Status == BillStatus.Paid);
+
+            vm.PendingBills = bills.Count(b => b.Status == BillStatus.Pending);
+
+            vm.OverdueBills = bills.Count(b => b.Status == BillStatus.Overdue);
+
+            vm.OutstandingAmount = bills
+                .Where(b => b.Status != BillStatus.Paid)
+                .Sum(b => b.Amount);
+
+            vm.Analytics = await _analyticsService.AnalyzeAsync(
+                documents,
+                bills);
 
             return View(vm);
         }

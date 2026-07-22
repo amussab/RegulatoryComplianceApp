@@ -27,6 +27,135 @@
 
 </div>
 
+<form method="get" class="card mb-4">
+
+    <div class="card-body">
+
+        <div class="row mb-3">
+
+            <div class="col-md-7">
+
+                <label class="form-label">Search</label>
+
+                <input type="text"
+                       name="search"
+                       value="@ViewBag.Search"
+                       class="form-control"
+                       placeholder="Search by title or document number..." />
+
+            </div>
+
+            <div class="col-md-5">
+
+                <label class="form-label">Status</label>
+
+                <select name="status" class="form-select">
+
+                    <option value="">All Statuses</option>
+
+                    <option value="Valid"
+                            selected="@(ViewBag.Status == "Valid")">
+                        Valid
+                    </option>
+
+                    <option value="Expiring Soon"
+                            selected="@(ViewBag.Status == "Expiring Soon")">
+                        Expiring Soon
+                    </option>
+
+                    <option value="Expired"
+                            selected="@(ViewBag.Status == "Expired")">
+                        Expired
+                    </option>
+
+                    <option value="No Expiry"
+                            selected="@(ViewBag.Status == "No Expiry")">
+                        No Expiry
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+        <div class="row align-items-end">
+
+            <div class="col-md-4">
+
+                <label class="form-label">Document Type</label>
+
+                <select name="documentTypeId"
+                        class="form-select">
+
+                    <option value="">All Types</option>
+
+                    @foreach (var type in ViewBag.DocumentTypes)
+                    {
+                        <option value="@type.DocumentTypeId"
+                                selected="@(ViewBag.DocumentTypeId?.ToString() == type.DocumentTypeId.ToString())">
+
+                            @type.TypeName
+
+                        </option>
+                    }
+
+                </select>
+
+            </div>
+
+            <div class="col-md-4">
+
+                <label class="form-label">Responsible User</label>
+
+                <select name="userId"
+                        class="form-select">
+
+                    <option value="">All Users</option>
+
+                    @foreach (var user in ViewBag.Users)
+                    {
+                        <option value="@user.UserId"
+                                selected="@(ViewBag.UserId?.ToString() == user.UserId.ToString())">
+
+                            @user.FullName
+
+                        </option>
+                    }
+
+                </select>
+
+            </div>
+
+            <div class="col-md-4">
+
+                <div class="d-flex justify-content-end gap-2">
+
+                    <button type="submit"
+                            class="btn btn-primary">
+
+                        <i class="bi bi-funnel-fill me-1"></i>
+                        Filter
+
+                    </button>
+
+                    <a asp-action="Index"
+                       class="btn btn-outline-secondary">
+
+                        Clear
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</form>
+
 <div class="card">
 
     <div class="card-body p-0">

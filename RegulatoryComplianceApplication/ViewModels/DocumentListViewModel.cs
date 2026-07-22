@@ -9,5 +9,8 @@
         public DateOnly? ExpiryDate { get; set; }
         public string ResponsibleUser { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty; // "Valid" | "Expiring Soon" | "Expired"
+        public int DocumentTypeId { get; set; }
+
+        public int ResponsibleUserId { get; set; }
     }
 }
