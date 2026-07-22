@@ -181,6 +181,21 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services
                 if (existingDocument == null)
                     throw new InvalidOperationException("Document not found.");
 
+                var originalDocument = new Document
+                {
+                    DocumentId = existingDocument.DocumentId,
+                    Title = existingDocument.Title,
+                    DocumentNumber = existingDocument.DocumentNumber,
+                    DocumentTypeId = existingDocument.DocumentTypeId
+                };
+
+                var originalVersion = new DocumentVersion
+                {
+                    IssueDate = existingDocument.CurrentVersion!.IssueDate,
+                    ExpiryDate = existingDocument.CurrentVersion.ExpiryDate,
+                    FilePath = existingDocument.CurrentVersion.FilePath
+                };
+
                 existingDocument.Title = document.Title;
                 existingDocument.DocumentNumber = document.DocumentNumber;
                 existingDocument.DocumentTypeId = document.DocumentTypeId;
@@ -197,6 +212,7 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services
                 }
 
                 var oldResponsible = existingDocument.ResponsibleUsers.FirstOrDefault();
+                var oldResponsibleId = oldResponsible?.UserId;
 
                 if (oldResponsible != null)
                 {
@@ -216,11 +232,39 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services
 
                 await _context.SaveChangesAsync();
 
-                await _auditLogger.LogAsync(
+                if (oldResponsibleId != responsibleUserId)
+                {
+                    await _auditLogger.LogAsync(
+                        editedByUserId,
+                        "Edit",
+                        "Document",
+                        existingDocument.DocumentId,
+                        "ResponsibleUser",
+                        oldResponsibleId?.ToString(),
+                        responsibleUserId.ToString());
+                }
+
+                await _auditLogger.LogChangesAsync(
                     editedByUserId,
                     "Edit",
                     "Document",
-                    existingDocument.DocumentId);
+                    existingDocument.DocumentId,
+                    originalDocument,
+                    existingDocument,
+                    nameof(Document.Title),
+                    nameof(Document.DocumentNumber),
+                    nameof(Document.DocumentTypeId));
+
+                await _auditLogger.LogChangesAsync(
+                    editedByUserId,
+                    "Edit",
+                    "Document",
+                    existingDocument.DocumentId,
+                    originalVersion,
+                    existingDocument.CurrentVersion!,
+                    nameof(DocumentVersion.IssueDate),
+                    nameof(DocumentVersion.ExpiryDate),
+                    nameof(DocumentVersion.FilePath));
 
                 await transaction.CommitAsync();
             }
