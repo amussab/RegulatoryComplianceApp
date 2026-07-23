@@ -9,8 +9,8 @@ namespace RegulatoryComplianceApplication.Core.Interfaces
 
         Task<IEnumerable<Bill>> GetOverdueAsync();
         Task<Bill?> GetByIdAsync(int billId);
-        Task<Bill> CreateAsync(Bill bill);
-        Task UpdateAsync(Bill bill);
-        Task SoftDeleteAsync(int billId);
+        Task<Bill> CreateAsync(Bill bill, int createdByUserId);
+        Task UpdateAsync(Bill bill, int editedByUserId);
+        Task SoftDeleteAsync(int billId, int deletedByUserId);
     }
 }

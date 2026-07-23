@@ -7,6 +7,7 @@ using RegulatoryComplianceApplication.Core.Interfaces;
 using RegulatoryComplianceApplication.Core.Models;
 using RegulatoryComplianceApplication.Infrastructure.Data;
 using RegulatoryComplianceApplication.Web.ViewModels;
+using System.Security.Claims;
 
 namespace RegulatoryComplianceApplication.Web.Controllers
 {
@@ -193,7 +194,11 @@ namespace RegulatoryComplianceApplication.Web.Controllers
             bill.Status = vm.Status;
             bill.UserId = vm.UserId;
 
-            await _billService.UpdateAsync(bill);
+            var actingUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+            await _billService.UpdateAsync(
+                bill,
+                actingUserId);
 
             return RedirectToAction(nameof(Index));
         }
@@ -239,7 +244,11 @@ namespace RegulatoryComplianceApplication.Web.Controllers
                 AttachmentPath = attachmentPath
             };
 
-            await _billService.CreateAsync(bill);
+            var actingUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+            await _billService.CreateAsync(
+                bill,
+                actingUserId);
 
             return RedirectToAction(nameof(Index));
         }
@@ -258,7 +267,11 @@ namespace RegulatoryComplianceApplication.Web.Controllers
         [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await _billService.SoftDeleteAsync(id);
+            var actingUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+            await _billService.SoftDeleteAsync(
+                id,
+                actingUserId);
 
             return RedirectToAction(nameof(Index));
         }

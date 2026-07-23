@@ -5,6 +5,7 @@ using RegulatoryComplianceApplication.Core.Entities;
 using RegulatoryComplianceApplication.Core.Interfaces;
 using RegulatoryComplianceApplication.Infrastructure.Data;
 using RegulatoryComplianceApplication.Web.ViewModels;
+using System.Security.Claims;
 
 namespace RegulatoryComplianceApplication.Web.Controllers
 {
@@ -51,8 +52,8 @@ namespace RegulatoryComplianceApplication.Web.Controllers
                     RoleId = vm.RoleId,
                     IsActive = true
                 };
-
-                await _userService.CreateAsync(user, vm.Password);
+                var actingUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+                await _userService.CreateAsync(user, vm.Password, actingUserId);
 
                 TempData["Success"] = "User created successfully.";
 
@@ -95,12 +96,18 @@ namespace RegulatoryComplianceApplication.Web.Controllers
             if (user == null)
                 return NotFound();
 
-            user.FullName = vm.FullName;
-            user.Email = vm.Email;
-            user.RoleId = vm.RoleId;
-            user.IsActive = vm.IsActive;
+            var actingUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-            await _context.SaveChangesAsync();
+            await _userService.UpdateAsync(
+                new User
+                {
+                    UserId = vm.UserId,
+                    FullName = vm.FullName,
+                    Email = vm.Email,
+                    RoleId = vm.RoleId,
+                    IsActive = vm.IsActive
+                },
+                actingUserId);
 
             TempData["Success"] = "User updated successfully.";
 

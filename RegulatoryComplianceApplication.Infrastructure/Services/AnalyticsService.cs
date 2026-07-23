@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Text;
 using System.Text.Json;
 using RegulatoryComplianceApplication.Core.Entities;
 using RegulatoryComplianceApplication.Core.Interfaces;

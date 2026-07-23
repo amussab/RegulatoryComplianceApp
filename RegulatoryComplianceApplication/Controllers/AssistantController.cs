@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using RegulatoryComplianceApplication.Core.Interfaces;
+using RegulatoryComplianceApplication.Infrastructure.Data;
 using RegulatoryComplianceApplication.Infrastructure.Services.AI;
 using RegulatoryComplianceApplication.ViewModels.Assistant;
+
 
 namespace RegulatoryComplianceApplication.Controllers
 {
@@ -9,10 +12,21 @@ namespace RegulatoryComplianceApplication.Controllers
     public class AssistantController : Controller
     {
         private readonly IAIService _aiService;
+        private readonly IAIIntentDetector _intentDetector;
+        private readonly IAIContextBuilder _contextBuilder;
 
-        public AssistantController(IAIService aiService)
+
+        public AssistantController(
+            IAIService aiService,
+            IAIIntentDetector intentDetector,
+            IAIContextBuilder contextBuilder,
+            IDocumentService documentService,
+            IBillService billService,
+            AppDbContext context)
         {
             _aiService = aiService;
+            _intentDetector = intentDetector;
+            _contextBuilder = contextBuilder;
         }
 
         [HttpGet]
@@ -27,18 +41,16 @@ namespace RegulatoryComplianceApplication.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            // Temporary context
-            string context = """
-            This is a Regulatory Compliance Management System.
+            var intent = await _intentDetector.DetectIntentAsync(model.Question);
 
-            It manages:
-            - Documents
-            - Bills
-            - Users
-            - Notifications
-            """;
 
-            model.Response = await _aiService.AskAsync(model.Question, context);
+            var context = await _contextBuilder.BuildContextAsync(
+                intent,
+                model.Question);
+
+            model.Response = await _aiService.AskAsync(
+                model.Question,
+                context);
 
             return View(model);
         }

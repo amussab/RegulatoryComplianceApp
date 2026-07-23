@@ -76,7 +76,10 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services
                     uploadedByUserId,
                     "Create",
                     "Document",
-                    document.DocumentId);
+                    document.DocumentId,
+                    "Document",
+                    null,
+                    $"{document.Title} ({document.DocumentNumber})");
 
                 await transaction.CommitAsync();
 
@@ -100,6 +103,11 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services
                 var lastVersionNumber = await _context.DocumentVersions
                     .Where(v => v.DocumentId == documentId)
                     .MaxAsync(v => v.VersionNumber);
+                var currentVersion = await _context.DocumentVersions
+                    .FirstAsync(v => v.DocumentVersionId == document.CurrentVersionId);
+
+                var oldIssueDate = document.CurrentVersion?.IssueDate;
+                var oldExpiryDate = document.CurrentVersion?.ExpiryDate;
 
                 newVersion.DocumentId = documentId;
                 newVersion.VersionNumber = lastVersionNumber + 1;
@@ -113,8 +121,24 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services
                 document.CurrentVersionId = newVersion.DocumentVersionId;
                 await _context.SaveChangesAsync();
 
-                await _auditLogger.LogAsync(uploadedByUserId, "Renew", "Document", documentId,
-                    "CurrentVersionId", oldVersionId?.ToString(), newVersion.DocumentVersionId.ToString());
+                
+
+                await _auditLogger.LogAsync(
+                    uploadedByUserId,
+                    "Renew",
+                    "Document",
+                    documentId,
+                    "ExpiryDate",
+                    oldExpiryDate?.ToString(),
+                    newVersion.ExpiryDate.ToString());
+                await _auditLogger.LogAsync(
+                    uploadedByUserId,
+                    "Renew",
+                    "Document",
+                    documentId,
+                    "IssueDate",
+                    oldIssueDate.ToString(),
+                    newVersion.IssueDate.ToString());
 
                 await transaction.CommitAsync();
                 return newVersion;
@@ -160,7 +184,10 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services
                 deletedByUserId,
                 "Delete",
                 "Document",
-                document.DocumentId);
+                document.DocumentId,
+                "Document",
+                $"{document.Title} ({document.DocumentNumber})",
+                "Soft Deleted");
         }
         public async Task UpdateAsync(
             Document document,
