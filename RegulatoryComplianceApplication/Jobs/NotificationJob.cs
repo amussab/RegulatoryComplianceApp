@@ -31,7 +31,14 @@ namespace RegulatoryComplianceApplication.Jobs
                 await _notificationService.CreateExpiryNotificationsAsync(document);
             }
 
-           
+            var expiredDocuments = await _documentService.GetExpiredAsync();
+
+            foreach (var document in expiredDocuments)
+            {
+                await _notificationService.CreateExpiredNotificationsAsync(document);
+            }
+
+
             var dueSoonBills = await _billService.GetDueSoonAsync(7);
             
             foreach (var bill in dueSoonBills)

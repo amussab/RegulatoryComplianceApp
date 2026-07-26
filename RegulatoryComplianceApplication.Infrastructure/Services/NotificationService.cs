@@ -107,6 +107,57 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services
             await _context.SaveChangesAsync();
         }
 
+        public async Task CreateExpiredNotificationsAsync(Document document)
+        {
+            if (document == null)
+                throw new ArgumentNullException(nameof(document));
+
+            var loadedDocument = await LoadDocumentAsync(document.DocumentId);
+
+            if (loadedDocument == null || loadedDocument.CurrentVersion == null)
+                return;
+
+            var recipients = await GetRecipientsAsync(loadedDocument);
+
+            if (!recipients.Any())
+                return;
+
+            var message = BuildExpiredNotificationMessage(loadedDocument);
+
+            var existingRecipientIds = await _context.Notifications
+                .Where(n =>
+                    n.DocumentId == loadedDocument.DocumentId &&
+                    !n.IsRead &&
+                    n.Message.Contains("expired"))
+                .Select(n => n.RecipientUserId)
+                .ToHashSetAsync();
+
+            var notificationsToCreate = new List<Notification>();
+
+            foreach (var recipient in recipients)
+            {
+                if (existingRecipientIds.Contains(recipient.UserId))
+                    continue;
+
+                notificationsToCreate.Add(new Notification
+                {
+                    DocumentId = loadedDocument.DocumentId,
+                    RecipientUserId = recipient.UserId,
+                    Channel = NotificationChannel,
+                    Message = message,
+                    IsRead = false,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+
+            if (!notificationsToCreate.Any())
+                return;
+
+            _context.Notifications.AddRange(notificationsToCreate);
+
+            await _context.SaveChangesAsync();
+        }
+
         public async Task CreateBillNotificationsAsync(Bill bill)
         {
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
@@ -276,6 +327,18 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services
                 $"{document.DocumentType.TypeName}{Environment.NewLine}{Environment.NewLine}" +
                 $"Document Number: {document.DocumentNumber}{Environment.NewLine}{Environment.NewLine}" +
                 $"This document expires on {expiryDate:dd MMMM yyyy}.";
+        }
+        private static string BuildExpiredNotificationMessage(Document document)
+        {
+            if (document.CurrentVersion == null)
+                throw new InvalidOperationException($"Document {document.DocumentId} has no current version.");
+
+            var expiryDate = document.CurrentVersion.ExpiryDate?.ToDateTime(TimeOnly.MinValue);
+
+            return
+                $"{document.DocumentType.TypeName}{Environment.NewLine}{Environment.NewLine}" +
+                $"Document Number: {document.DocumentNumber}{Environment.NewLine}{Environment.NewLine}" +
+                $"This document expired on {expiryDate:dd MMMM yyyy}. Immediate action is required.";
         }
         private static string BuildBillNotificationMessage(Bill bill)
         {

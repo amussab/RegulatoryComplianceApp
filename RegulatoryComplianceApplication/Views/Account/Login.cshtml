@@ -1,6 +1,14 @@
 ﻿@model RegulatoryComplianceApplication.Web.ViewModels.LoginViewModel
 
 <h1>Login</h1>
+<div class="text-center mb-4">
+
+    <img src="~/images/BTGroupLogo.png"
+         asp-append-version="true"
+         alt="Company Logo"
+         height="80" />
+
+</div>
 <div asp-validation-summary="All" class="text-danger"></div>
 <form asp-action="Login" method="post">
     @Html.AntiForgeryToken()

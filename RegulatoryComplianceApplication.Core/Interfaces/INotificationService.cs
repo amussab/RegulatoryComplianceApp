@@ -16,5 +16,6 @@ namespace RegulatoryComplianceApplication.Core.Interfaces
         Task MarkAsReadAsync(int notificationId, int userId);
 
         Task MarkAllAsReadAsync(int userId);
+        Task CreateExpiredNotificationsAsync(Document document);
     }
 }

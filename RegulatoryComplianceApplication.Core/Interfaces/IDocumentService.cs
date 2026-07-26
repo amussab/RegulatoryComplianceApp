@@ -6,6 +6,7 @@ namespace RegulatoryComplianceApplication.Core.Interfaces
     {
         Task<Document?> GetByIdAsync(int documentId);
         Task<IEnumerable<Document>> GetAllAsync();
+        Task<IEnumerable<Document>> GetExpiredAsync();
 
         Task<Document> CreateAsync(
             Document document,

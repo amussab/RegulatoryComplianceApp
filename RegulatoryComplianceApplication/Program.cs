@@ -9,6 +9,7 @@ using RegulatoryComplianceApplication.Infrastructure.Services;
 using RegulatoryComplianceApplication.Jobs;
 using RegulatoryComplianceApplication.Infrastructure.Services.AI;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -27,6 +28,7 @@ builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
 builder.Services.AddScoped<IAIIntentDetector, AIIntentDetector>();
 builder.Services.AddScoped<IAIContextBuilder, AIContextBuilder>();
+builder.Services.AddScoped<ICalendarService, CalendarService>();
 
 // Hangfire Job
 builder.Services.AddScoped<NotificationJob>();

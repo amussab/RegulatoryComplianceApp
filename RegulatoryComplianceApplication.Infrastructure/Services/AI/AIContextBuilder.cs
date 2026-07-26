@@ -111,11 +111,11 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services.AI
             foreach (var d in docs)
             {
                 sb.AppendLine($"""
-Title: {d.Title}
-Number: {d.DocumentNumber}
-Expiry: {d.CurrentVersion?.ExpiryDate}
+                    Title: {d.Title}
+                    Number: {d.DocumentNumber}
+                    Expiry: {d.CurrentVersion?.ExpiryDate}
 
-""");
+                    """);
             }
         }
 

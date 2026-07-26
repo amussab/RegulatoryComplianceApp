@@ -150,6 +150,21 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services
             }
         }
 
+        public async Task<IEnumerable<Document>> GetExpiredAsync()
+        {
+            var today = DateOnly.FromDateTime(DateTime.Today);
+
+            return await _context.Documents
+                .Include(d => d.DocumentType)
+                .Include(d => d.CurrentVersion)
+                .Where(d =>
+                    !d.IsDeleted &&
+                    d.DocumentType.IsExpirable &&
+                    d.CurrentVersion != null &&
+                    d.CurrentVersion.ExpiryDate < today)
+                .ToListAsync();
+        }
+
         public async Task<IEnumerable<Document>> GetExpiringSoonAsync(int daysThreshold)
         {
             var cutoff = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(daysThreshold));

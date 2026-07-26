@@ -28,11 +28,16 @@
 
         <div class="container-fluid px-4">
 
-            <a class="navbar-brand fw-semibold"
+            <a class="navbar-brand d-flex align-items-center fw-semibold"
                asp-controller="Documents"
                asp-action="Dashboard">
 
-                <i class="bi bi-shield-check me-2"></i>
+                <img src="~/images/BTGroupLogo.png"
+                     asp-append-version="true"
+                     alt="Company Logo"
+                     height="36"
+                     class="me-2" />
+
                 Regulatory Compliance System
 
             </a>
@@ -122,6 +127,17 @@
 
                             </a>
 
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               asp-controller="Calendar"
+                               asp-action="Index">
+
+                                <i class="bi bi-calendar-event me-1"></i>
+                                Calendar
+
+                            </a>
                         </li>
 
                         <li class="nav-item">
