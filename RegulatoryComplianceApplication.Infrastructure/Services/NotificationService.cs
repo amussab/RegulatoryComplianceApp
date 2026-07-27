@@ -361,7 +361,7 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services
 
             return
                 $"{bill.BillName}{Environment.NewLine}{Environment.NewLine}" +
-                $"Amount: {bill.Amount:C}{Environment.NewLine}" +
+                $"Amount: SAR {bill.Amount:N2}{Environment.NewLine}" +
                 $"Frequency: {bill.Frequency}{Environment.NewLine}" +
                 $"Status: {bill.Status}{Environment.NewLine}{Environment.NewLine}" +
                 intro;
