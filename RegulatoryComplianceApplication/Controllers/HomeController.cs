@@ -34,7 +34,7 @@ namespace RegulatoryComplianceApplication.Controllers
             await _emailService.SendEmailAsync(
                 "abdulrazaqmussab1@gmail.com",
                 "SMTP Test",
-                "Congratulations! Your Regulatory Compliance Application can send emails.");
+                "Email");
 
             return Content("Email sent successfully!");
         }

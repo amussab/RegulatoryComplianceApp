@@ -232,7 +232,8 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services
         {
             return await _context.Notifications
                 .Include(n => n.Document)
-                .ThenInclude(d => d.DocumentType)
+                    .ThenInclude(d => d.DocumentType)
+                .Include(n => n.Bill)
                 .Where(n => n.RecipientUserId == userId)
                 .OrderByDescending(n => n.CreatedAt)
                 .ToListAsync();
@@ -316,7 +317,6 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services
                 n.RecipientUserId == recipientUserId &&
                 !n.IsRead);
         }
-
         private static string BuildNotificationMessage(Document document)
         {
             if (document.CurrentVersion == null)

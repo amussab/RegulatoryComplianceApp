@@ -52,7 +52,32 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services.AI
 
                 case AssistantIntent.Bills:
 
-                    await AddBills(sb);
+                    var users = await _context.Users
+                        .Where(u => u.IsActive)
+                        .ToListAsync();
+
+                    var matchedUser = users.FirstOrDefault(u =>
+                    {
+                        var fullName = u.FullName.ToLowerInvariant();
+                        var firstName = fullName
+                            .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                            .FirstOrDefault();
+
+                        var q = question.ToLowerInvariant();
+
+                        return q.Contains(fullName) ||
+                               (firstName != null && q.Contains(firstName));
+                    });
+
+                    if (matchedUser != null)
+                    {
+                        await AddBillsByUser(sb, question);
+                    }
+                    else
+                    {
+                        await AddBills(sb);
+                    }
+
                     break;
 
                 case AssistantIntent.OverdueBills:
@@ -85,7 +110,6 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services.AI
                     await AddDashboard(sb);
                     break;
             }
-
             return sb.ToString();
         }
 
@@ -238,7 +262,50 @@ Expiry: {d.Document.CurrentVersion?.ExpiryDate}
                     $"{log.User.FullName} {log.Action} {log.EntityName}");
             }
         }
+        private async Task AddBillsByUser(
+    StringBuilder sb,
+    string question)
+        {
+            var users = await _context.Users
+                .Where(u => u.IsActive)
+                .ToListAsync();
 
+            var matchedUser = users.FirstOrDefault(u =>
+            {
+                var fullName = u.FullName.ToLowerInvariant();
+                var firstName = fullName
+                    .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                    .FirstOrDefault();
+
+                var q = question.ToLowerInvariant();
+
+                return q.Contains(fullName) ||
+                       (firstName != null && q.Contains(firstName));
+            });
+
+            if (matchedUser == null)
+            {
+                sb.AppendLine("No matching user found.");
+                return;
+            }
+
+            var bills = await _context.Bills
+                .Where(b => !b.IsDeleted && b.UserId == matchedUser.UserId)
+                .ToListAsync();
+
+            sb.AppendLine($"Bills assigned to {matchedUser.FullName}:");
+
+            foreach (var bill in bills)
+            {
+                sb.AppendLine($"""
+                Bill: {bill.BillName}
+                Amount: SAR {bill.Amount:N2}
+                Due: {bill.DueDate}
+                Status: {bill.Status}
+
+                """);
+            }
+        }
         private async Task AddDashboard(StringBuilder sb)
         {
             sb.AppendLine(
@@ -253,5 +320,6 @@ Expiry: {d.Document.CurrentVersion?.ExpiryDate}
             sb.AppendLine(
                 $"Notifications: {await _context.Notifications.CountAsync()}");
         }
+
     }
 }

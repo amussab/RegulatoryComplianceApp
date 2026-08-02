@@ -72,25 +72,59 @@
                                 <td>
                                     @if (notification.DocumentId.HasValue)
                                     {
-                                        <a asp-controller="Documents"
-                                           asp-action="Details"
-                                           asp-route-id="@notification.DocumentId"
-                                           class="text-decoration-none">
+                                        if (notification.Document != null && !notification.Document.IsDeleted)
+                                        {
+                                            <a asp-controller="Documents"
+                                               asp-action="Details"
+                                               asp-route-id="@notification.DocumentId"
+                                               class="text-decoration-none">
 
-                                            @notification.Message
+                                                @notification.Message
 
-                                        </a>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">
+
+                                                @notification.Message
+
+                                            </span>
+
+                                            <span class="badge bg-secondary ms-2">
+
+                                                Deleted
+
+                                            </span>
+                                        }
                                     }
                                     else if (notification.BillId.HasValue)
                                     {
-                                        <a asp-controller="Bills"
-                                           asp-action="Details"
-                                           asp-route-id="@notification.BillId"
-                                           class="text-decoration-none">
+                                        if (notification.Bill != null && !notification.Bill.IsDeleted)
+                                        {
+                                            <a asp-controller="Bills"
+                                               asp-action="Details"
+                                               asp-route-id="@notification.BillId"
+                                               class="text-decoration-none">
 
-                                            @notification.Message
+                                                @notification.Message
 
-                                        </a>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">
+
+                                                @notification.Message
+
+                                            </span>
+
+                                            <span class="badge bg-secondary ms-2">
+
+                                                Deleted
+
+                                            </span>
+                                        }
                                     }
                                     else
                                     {
@@ -103,16 +137,11 @@
                                 </td>
 
                                 <td>
-                                    @if (notification.SentAt.HasValue)
-                                    {
-                                        @notification.SentAt.Value.ToString("dd MMM yyyy HH:mm")
-                                    }
-                                    else
-                                    {
+                                   
                                         <span class="text-muted">
                                             Not Sent
                                         </span>
-                                    }
+                                    
                                 </td>
 
                                 <td>

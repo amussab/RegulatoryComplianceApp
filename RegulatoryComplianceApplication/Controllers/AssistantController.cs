@@ -43,7 +43,6 @@ namespace RegulatoryComplianceApplication.Controllers
 
             var intent = await _intentDetector.DetectIntentAsync(model.Question);
 
-
             var context = await _contextBuilder.BuildContextAsync(
                 intent,
                 model.Question);

@@ -35,29 +35,37 @@ namespace RegulatoryComplianceApplication.Infrastructure.Services.AI
                     {
                         role = "system",
                         content =
-"""
-You are an intent classifier.
+                        """
+                        You are an intent classifier.
 
-Your job is to return ONLY ONE of these words.
+                        Return ONLY ONE of the following intent names.
 
-GeneralKnowledge
-Documents
-DocumentsByUser
-ExpiringDocuments
-Bills
-OverdueBills
-DueSoonBills
-Users
-Notifications
-AuditLogs
-Dashboard
+                        GeneralKnowledge
+                        Documents
+                        DocumentsByUser
+                        ExpiringDocuments
+                        Bills
+                        OverdueBills
+                        DueSoonBills
+                        Users
+                        Notifications
+                        AuditLogs
+                        Dashboard
 
-Do not explain.
+                        Rules:
 
-Do not write punctuation.
+                        - Questions about documents owned by or assigned to a user → DocumentsByUser.
+                        - Questions about bills, payments, invoices, or bill ownership → Bills.
+                        - Questions about overdue bills → OverdueBills.
+                        - Questions about bills due soon or upcoming bills → DueSoonBills.
+                        - Questions asking for all documents → Documents.
+                        - Questions asking for all bills → Bills.
+                        - General regulatory or compliance knowledge → GeneralKnowledge.
 
-Only output ONE word from the list.
-"""
+                        Only output the intent name.
+                        Do not explain.
+                        Do not use punctuation.
+                        """
                     },
                     new
                     {
